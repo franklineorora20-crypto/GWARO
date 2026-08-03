@@ -1,138 +1,102 @@
 import React from 'react';
-import { Sparkles } from 'lucide-react';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
-  showMotto?: boolean;
-  className?: string;
-  onClick?: () => void;
-  variant?: 'light' | 'dark' | 'auto';
+  showText?: boolean;
 }
 
-export const Logo: React.FC<LogoProps> = ({
-  size = 'md',
-  showMotto = true,
-  className = '',
-  onClick,
-  variant = 'auto',
-}) => {
+export const Logo: React.FC<LogoProps> = ({ size = 'md', showText = true }) => {
   const badgeDimensions = {
     sm: 'w-10 h-10',
-    md: 'w-12 h-12 sm:w-14 sm:h-14',
-    lg: 'w-16 h-16 sm:w-20 sm:h-20',
-    xl: 'w-20 h-20 sm:w-28 sm:h-28',
+    md: 'w-14 h-14',
+    lg: 'w-20 h-20',
+    xl: 'w-28 h-28',
   };
-
-  const titleSizes = {
-    sm: 'text-xs sm:text-sm',
-    md: 'text-sm sm:text-base',
-    lg: 'text-base sm:text-xl',
-    xl: 'text-xl sm:text-3xl',
-  };
-
-  const subtitleSizes = {
-    sm: 'text-[9px] sm:text-[10px]',
-    md: 'text-[10px] sm:text-[11px]',
-    lg: 'text-xs sm:text-sm',
-    xl: 'text-sm sm:text-base',
-  };
-
-  const isDark = variant === 'dark';
 
   return (
-    <div
-      onClick={onClick}
-      className={`inline-flex items-center gap-3 select-none ${onClick ? 'cursor-pointer group' : ''} ${className}`}
-    >
-      {/* Exact Vector Emblem Badge containing ONLY the emblem letter icon */}
+    <div className="flex items-center gap-3 group cursor-pointer select-none">
+      {/* Exact Standalone Emblem Patch matching master artwork */}
       <div className={`relative shrink-0 flex items-center justify-center ${badgeDimensions[size]}`}>
         <svg
-          viewBox="0 0 160 160"
-          className="w-full h-full drop-shadow-md group-hover:drop-shadow-lg transition-transform duration-300 group-hover:scale-105"
+          viewBox="0 0 160 180"
+          className="w-full h-full drop-shadow-md group-hover:drop-shadow-xl transition-all duration-300 group-hover:scale-105"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Top Hanging Tag Strings */}
-          <line x1="77" y1="0" x2="77" y2="14" stroke="#3A3A3A" strokeWidth="2" strokeLinecap="round" />
-          <line x1="83" y1="0" x2="83" y2="14" stroke="#3A3A3A" strokeWidth="2" strokeLinecap="round" />
-
-          {/* Outer Dark Purple Badge Base */}
-          <circle cx="80" cy="85" r="70" fill="#2E0C4B" stroke="#9A9A9A" strokeWidth="1.5" />
-          <circle cx="80" cy="85" r="67" fill="#5E228B" />
-
-          {/* Gold Hanger Hook atop white medallion */}
+          {/* WHITE DIE-CUT EMBLEM PATCH BACKDROP */}
           <path
-            d="M72 32 C72 16 90 16 88 28 C87 34 80 36 80 44"
+            d="M 72 26 C 72 4 98 4 93 24 C 88 32 83 37 83 44 A 62 62 0 0 1 146 94 C 146 112 152 132 138 146 C 124 160 100 172 74 172 C 44 172 18 150 14 120 C 9 100 16 80 28 68 A 62 62 0 0 1 77 44 C 77 37 72 32 72 26 Z"
+            fill="#FFFFFF"
+          />
+
+          {/* INNER WHITE MEDALLION BASE */}
+          <circle cx="80" cy="96" r="54" fill="#FFFFFF" />
+
+          {/* GOLD CLOTHES HANGER (HOOK & SHOULDER ARCH) */}
+          <path
+            d="M 74 28 C 74 11 95 10 90 25 C 87 31 80 36 80 46"
             fill="none"
-            stroke="#E2B227"
-            strokeWidth="5"
+            stroke="#E3A314"
+            strokeWidth="7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M 27 94 A 53 53 0 0 1 133 94"
+            fill="none"
+            stroke="#E3A314"
+            strokeWidth="8.5"
             strokeLinecap="round"
           />
 
-          {/* White Inner Medallion */}
-          <circle cx="80" cy="85" r="42" fill="#FFFFFF" stroke="#E2B227" strokeWidth="4.5" />
+          {/* DEEP PURPLE CUSTOM VECTOR LETTER 'g' */}
+          <g fill="#421354">
+            {/* Upper Oval Bowl & Inner Counter */}
+            <path d="M 79 53 C 65 53 54 62 54 73 C 54 84 65 91 79 91 C 93 91 104 84 104 73 C 104 62 93 53 79 53 Z M 79 61 C 86 61 92 66 92 73 C 92 80 86 84 79 84 C 72 84 66 80 66 73 C 66 66 72 61 79 61 Z" />
 
-          {/* Custom Vector 'g' matching photo */}
-          <g fill="#5E228B">
-            {/* Top loop of 'g' */}
-            <path d="M78 57 C70 57 65 63 65 70 C65 77 71 81 79 81 C88 81 92 75 92 70 C92 63 86 57 78 57 Z M78 63 C82 63 84 66 84 70 C84 73 82 76 78 76 C74 76 72 73 72 70 C72 66 74 63 78 63 Z" />
-            
-            {/* Ear/Curl on top right of top loop */}
-            <path d="M88 61 C91 58 96 59 98 62 C96 64 92 64 89 62 Z" />
+            {/* Top-Right Calligraphic Ear with Teardrop Void */}
+            <path d="M 96 58 C 103 52 112 54 114 60 C 111 65 103 64 99 60 Z" />
 
-            {/* Connecting stem / neck */}
-            <path d="M80 79 L80 87 L82 87 L82 79 Z" />
+            {/* Calligraphic Neck / Waist connecting the two bowls */}
+            <path d="M 85 85 C 97 87 69 90 74 96 C 79 99 89 96 86 100 C 78 102 66 97 72 90 C 76 86 82 85 85 85 Z" />
 
-            {/* Bottom loop / descender of 'g' */}
-            <path d="M80 85 C66 85 62 93 62 101 C62 111 72 116 83 116 C95 116 102 108 102 98 C102 90 94 85 80 85 Z M82 110 C72 110 68 105 68 100 C68 95 72 91 82 91 C91 91 95 95 95 100 C95 105 91 110 82 110 Z" />
+            {/* Lower Descender Loop & Inner Counter */}
+            <path d="M 80 96 C 56 96 47 107 47 121 C 47 138 64 146 84 146 C 104 146 116 134 116 118 C 116 105 101 96 80 96 Z M 82 139 C 68 139 59 131 59 121 C 59 111 68 103 82 103 C 96 103 104 111 104 121 C 104 131 96 139 82 139 Z" />
           </g>
 
-          {/* Two white oval cutouts / eyes inside the bottom loop of 'g' */}
-          <circle cx="75" cy="100" r="2.5" fill="#FFFFFF" />
-          <circle cx="86" cy="100" r="2.5" fill="#FFFFFF" />
+          {/* TWO WHITE EYES INSIDE LOWER COUNTER OF 'g' */}
+          <circle cx="72" cy="122" r="4" fill="#FFFFFF" />
+          <circle cx="91" cy="122" r="4" fill="#FFFFFF" />
 
-          {/* Two purple soap bubble dots to the left of 'g' */}
-          <circle cx="53" cy="74" r="3.2" fill="#5E228B" />
-          <circle cx="58" cy="84" r="2.2" fill="#5E228B" />
+          {/* TWO PURPLE SOAP BUBBLE DOTS TO THE LEFT */}
+          <circle cx="43" cy="77" r="5.5" fill="#421354" />
+          <circle cx="49" cy="93" r="3.8" fill="#421354" />
 
-          {/* Washing Liquid Wave at bottom of white circle */}
+          {/* LOWER DEEP PURPLE WATER SPLASH FLUID STROKES WITH EVEN SPACES */}
           <path
-            d="M48 100 C58 120 102 120 114 98 C104 116 56 118 48 100 Z"
-            fill="#5E228B"
+            d="M 23 104 C 24 120 32 138 49 148 C 53 150 56 146 51 143 C 38 135 29 122 26 110 C 25 105 22 99 23 104 Z"
+            fill="#421354"
           />
-          {/* White Suds on Wave */}
-          <circle cx="108" cy="101" r="2.2" fill="#FFFFFF" />
-          <circle cx="102" cy="107" r="1.6" fill="#FFFFFF" />
+          <path
+            d="M 59 152 C 68 161 82 161 90 154 C 93 151 88 147 83 149 C 76 153 69 152 64 148 C 61 146 58 149 59 152 Z"
+            fill="#421354"
+          />
+          <path
+            d="M 98 153 C 111 148 124 139 131 127 C 134 123 129 120 126 124 C 118 134 107 142 97 146 C 93 148 94 152 98 153 Z"
+            fill="#421354"
+          />
+          <path
+            d="M 137 122 C 145 112 148 102 148 94 C 144 92 141 97 140 104 C 138 112 134 119 132 124 C 131 127 134 128 137 122 Z"
+            fill="#421354"
+          />
+
+          {/* Small organic liquid droplets in gaps */}
+          <circle cx="134" cy="132" r="3.6" fill="#421354" />
+          <circle cx="116" cy="147" r="3.2" fill="#421354" />
+          <circle cx="94" cy="157" r="2.8" fill="#421354" />
+          <circle cx="55" cy="154" r="3" fill="#421354" />
         </svg>
-      </div>
-
-      <div className="flex flex-col justify-center font-manrope">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span
-            className={`${titleSizes[size]} font-black tracking-wider uppercase leading-tight ${
-              isDark ? 'text-white' : 'text-[#5E228B]'
-            }`}
-          >
-            Goldtribe Link
-          </span>
-          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-[#5E228B] text-[#FED65B] uppercase tracking-wider shadow-2xs border border-[#FED65B]/30">
-            Laundromat
-          </span>
-        </div>
-
-        {showMotto && (
-          <div className="flex items-center gap-1.5 mt-0.5">
-            <span
-              className="text-[10px] sm:text-[11px] font-black text-[#5E228B] dark:text-[#FED65B] bg-[#FED65B]/20 dark:bg-[#FED65B]/10 px-2 py-0.5 rounded-md border border-[#D8A620]/40 uppercase tracking-widest flex items-center gap-1"
-            >
-              <Sparkles className="w-3 h-3 text-[#D8A620]" />
-              <span>USAFI: KAZI YETU</span>
-            </span>
-          </div>
-        )}
       </div>
     </div>
   );
 };
-
-
