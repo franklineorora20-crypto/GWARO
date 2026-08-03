@@ -1,0 +1,34 @@
+{
+  "entities": {
+    "orders": {
+      "title": "Orders",
+      "description": "Goldtribe Laundry & Garment Care Orders",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "tracking_id": { "type": "string" },
+        "customerName": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "branch": { "type": "string" },
+        "address": { "type": "string" },
+        "items": { "type": "array" },
+        "totalPrice": { "type": "number" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "estimatedDelivery": { "type": "string" },
+        "paymentStatus": { "type": "string" },
+        "deliveryType": { "type": "string" },
+        "specialNotes": { "type": "string" },
+        "trackingNotes": { "type": "array" },
+        "mpesaRef": { "type": "string" },
+        "mpesa_phone": { "type": "string" },
+        "mpesa_amount": { "type": "number" },
+        "checkout_request_id": { "type": "string" },
+        "merchant_request_id": { "type": "string" },
+        "payment_status_reason": { "type": "string" }
+      },
+      "required": ["customerName", "phone", "totalPrice", "status"]
+    }
+  }
+}
