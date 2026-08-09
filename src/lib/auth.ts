@@ -3,6 +3,7 @@ import { supabase, isSupabaseConfigured } from "./supabase";
 
 function parseAdminEmails(): string[] {
   const raw = import.meta.env.VITE_ADMIN_EMAILS ?? "";
+
   return raw
     .split(",")
     .map((e) => e.trim().toLowerCase())
@@ -11,59 +12,55 @@ function parseAdminEmails(): string[] {
 
 export function isAdminUser(user: User | null | undefined): boolean {
   if (!user?.email) return false;
+
   const allowed = parseAdminEmails();
-  if (allowed.length === 0) return true; // If no emails specified, allow configured user
+
+  // No configured admin emails = nobody is an admin
+  if (allowed.length === 0) return false;
+
   return allowed.includes(user.email.toLowerCase());
 }
 
 export async function signInAdmin(email: string, password: string) {
   const cleanEmail = email.trim().toLowerCase();
-  
-  if (isSupabaseConfigured) {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: cleanEmail,
-        password,
-      });
-      if (!error && data?.session && isAdminUser(data.user)) {
-        try {
-          localStorage.setItem("goldtribe_admin_session", JSON.stringify(data.session));
-        } catch {}
-        return data;
-      }
-    } catch (err) {
-      console.warn("Supabase auth notice, using admin session fallback:", err);
-    }
+
+  if (!isSupabaseConfigured) {
+    throw new Error("Supabase is not configured.");
   }
 
-  const allowed = parseAdminEmails();
-  if (allowed.length === 0 || allowed.includes(cleanEmail) || cleanEmail.includes("admin")) {
-    const mockUser = {
-      id: "admin-session-" + Date.now(),
-      email: cleanEmail || "admin@goldtribe.co.ke",
-      role: "authenticated",
-    } as unknown as User;
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: cleanEmail,
+    password,
+  });
 
-    const mockSession = {
-      access_token: "mock-admin-token-" + Date.now(),
-      token_type: "bearer",
-      user: mockUser,
-    } as unknown as Session;
-
-    try {
-      localStorage.setItem("goldtribe_admin_session", JSON.stringify(mockSession));
-    } catch {}
-
-    return { user: mockUser, session: mockSession };
+  if (error) {
+    throw new Error(error.message);
   }
 
-  throw new Error("This account is not authorized for admin access.");
+  if (!data.user || !data.session) {
+    throw new Error("Unable to create admin session.");
+  }
+
+  if (!isAdminUser(data.user)) {
+    await supabase.auth.signOut();
+    throw new Error("This account is not authorized for admin access.");
+  }
+
+  try {
+    localStorage.setItem(
+      "goldtribe_admin_session",
+      JSON.stringify(data.session)
+    );
+  } catch {}
+
+  return data;
 }
 
 export async function signOutAdmin() {
   try {
     localStorage.removeItem("goldtribe_admin_session");
   } catch {}
+
   if (isSupabaseConfigured) {
     try {
       await supabase.auth.signOut();
@@ -74,11 +71,19 @@ export async function signOutAdmin() {
 }
 
 export async function getAdminSession(): Promise<Session | null> {
+  // First check the saved Supabase session
   try {
     const saved = localStorage.getItem("goldtribe_admin_session");
+
     if (saved) {
       const session = JSON.parse(saved) as Session;
-      if (session && session.user) {
+
+      if (session?.user) {
+        if (!isAdminUser(session.user)) {
+          localStorage.removeItem("goldtribe_admin_session");
+          return null;
+        }
+
         return session;
       }
     }
@@ -90,12 +95,18 @@ export async function getAdminSession(): Promise<Session | null> {
 
   try {
     const { data, error } = await supabase.auth.getSession();
+
     if (error || !data) return null;
+
     const session = data.session;
-    if (session && !isAdminUser(session.user)) {
+
+    if (!session) return null;
+
+    if (!isAdminUser(session.user)) {
       await supabase.auth.signOut().catch(() => {});
       return null;
     }
+
     return session;
   } catch (err) {
     console.warn("getAdminSession notice:", err);
@@ -109,6 +120,7 @@ export function onAdminAuthChange(
   if (!isSupabaseConfigured) {
     return { unsubscribe: () => {} };
   }
+
   try {
     const {
       data: { subscription },
@@ -118,8 +130,10 @@ export function onAdminAuthChange(
         callback(null);
         return;
       }
+
       callback(session);
     });
+
     return subscription;
   } catch (err) {
     console.warn("onAdminAuthChange notice:", err);
