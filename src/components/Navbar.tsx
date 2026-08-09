@@ -6,8 +6,7 @@ import {
   Search, Crown, ArrowRight, Clock, Layers, HelpCircle,
   Sun, Moon
 } from 'lucide-react';
-import { LOGO_URL } from '../data/initialData';
-import { Logo } from './Logo';
+import logo from '../assets/images/goldtribe-logo.svg';
 import { Order, PageType } from '../types';
 import { useDarkMode } from '../lib/useDarkMode';
 
@@ -81,16 +80,26 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Main Navbar */}
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 h-20 sm:h-24 flex justify-between items-center">
         {/* Brand Logo & Motto - Click Logo to Toggle Dashboard Dropdown */}
-        <div className="relative" ref={dashboardRef}>
-          <button 
-            onClick={() => setLogoDashboardOpen(!logoDashboardOpen)} 
-            className="flex items-center gap-2 text-left focus:outline-none group cursor-pointer p-1.5 sm:p-2 rounded-2xl hover:bg-[#5E228B]/5 transition-all"
-            title="Click Logo for Goldtribe Dashboard"
-            aria-expanded={logoDashboardOpen}
-          >
-            <Logo size="md" showMotto={true} />
-            <ChevronDown className={`w-4 h-4 text-[#5E228B] dark:text-[#FED65B] transition-transform duration-200 group-hover:scale-110 ${logoDashboardOpen ? 'rotate-180 text-[#D8A620]' : ''}`} />
-          </button>
+       <div className="relative" ref={dashboardRef}>
+  <button
+    onClick={() => setLogoDashboardOpen(!logoDashboardOpen)}
+    className="flex items-center gap-2 text-left focus:outline-none group cursor-pointer p-1.5 sm:p-2 rounded-2xl hover:bg-[#5E228B]/5 transition-all"
+    title="Click Logo for Goldtribe Dashboard"
+    aria-expanded={logoDashboardOpen}
+  >
+    <img 
+    src={logo}
+  alt="Goldtribe Link Limited"
+  className="h-14 sm:h-16 w-auto object-contain"
+/>
+    <ChevronDown
+      className={`w-4 h-4 text-[#5E228B] dark:text-[#FED65B] transition-transform duration-200 group-hover:scale-110 ${
+        logoDashboardOpen
+          ? 'rotate-180 text-[#D8A620]'
+          : ''
+      }`}
+    />
+  </button>
 
           {/* Dropdown Quick Hub Screen Navigator */}
           <AnimatePresence>
