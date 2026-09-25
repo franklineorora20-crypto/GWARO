@@ -523,7 +523,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-rose-600/80 hover:bg-rose-600 text-white text-xs font-bold font-manrope transition-all cursor-pointer shadow-xs"
           >
             <LogOut className="w-4 h-4" />
-            <span>Sign out Admin</span>
+            <span>Sign Out</span>
           </button>
         </div>
       </aside>
@@ -618,10 +618,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <Filter className="w-3.5 h-3.5 text-[#5E228B] dark:text-[#FED65B]" /> Quick Filters:
             </span>
             {[
-              { id: 'all', label: `All Orders (${orders.length})` },
+              { id: 'all', label: `All (${orders.length})` },
               { id: 'Order Received', label: 'Received' },
               { id: 'Washing', label: 'In Washing' },
-              { id: 'Ready for Delivery', label: 'Ready for Delivery' },
+              { id: 'Ready for Delivery', label: 'Ready' },
               { id: 'Delivered', label: 'Completed' },
             ].map((chip) => (
               <button
@@ -1015,7 +1015,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="flex justify-between items-center">
                 <h3 className="text-xs font-black uppercase tracking-wider font-manrope text-[#5E228B] dark:text-[#FED65B] flex items-center gap-1.5">
                   <Calendar className="w-4 h-4 text-[#FED65B]" />
-                  Order Pickup Date & Time Option
+                  Pickup & Delivery Schedule
                 </h3>
                 <span className="text-[10px] text-[#6F6F6F] dark:text-gray-400 font-mono">
                   Created: {formatDate(selected.rawCreatedAt)}
@@ -1060,7 +1060,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   className="w-full py-2.5 rounded-xl bg-[#5E228B] text-white text-xs font-bold font-manrope hover:bg-[#4A1772] transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
                 >
                   <Clock className="w-3.5 h-3.5 text-[#FED65B]" />
-                  <span>Update & Save Scheduled Date/Time</span>
+                  <span>Save Schedule Changes</span>
                 </button>
               </div>
             </div>
@@ -1069,13 +1069,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div className="space-y-3 pt-2 border-t border-[#e5e2e1] dark:border-white/10">
               <h3 className="text-xs font-black uppercase tracking-wider font-manrope text-[#5E228B] dark:text-[#FED65B] flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                M-Pesa Receipt & Payment Verification
+                Payment Verification & Receipt Code
               </h3>
               <div className="bg-[#FAFAFA] dark:bg-[#25123a] p-3.5 rounded-2xl border border-[#e5e2e1] dark:border-white/10 space-y-3 text-xs">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <DetailRow icon={CreditCard} label="Total Amount" value={formatMoney(selected.totalPrice)} />
-                  <DetailRow icon={Phone} label="Test / Payer Phone" value={selected.mpesaPhone || selected.phone || "254708374149"} />
-                  <DetailRow icon={CheckCircle2} label="Receipt Code (Ref)" value={selected.mpesaReceiptNumber || selected.mpesaRef || "Not Attached"} />
+                  <DetailRow icon={Phone} label="Payer Phone Number" value={selected.mpesaPhone || selected.phone || "—"} />
+                  <DetailRow icon={CheckCircle2} label="M-Pesa Receipt Code" value={selected.mpesaReceiptNumber || selected.mpesaRef || "Not Attached"} />
                   {selected.checkoutRequestId && (
                     <DetailRow icon={Clock} label="Checkout Req ID" value={selected.checkoutRequestId} />
                   )}
@@ -1090,7 +1090,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 {/* Attach / Edit Safaricom M-Pesa Receipt Code */}
                 <div className="p-3 bg-white dark:bg-[#1a0c2a] rounded-xl border border-[#e5e2e1] dark:border-white/10 space-y-2">
                   <label className="text-[10px] font-extrabold uppercase text-[#5E228B] dark:text-[#FED65B] block font-manrope">
-                    Verify / Attach M-Pesa Receipt Code (e.g. QKH839201X)
+                    Attach M-Pesa Receipt Code
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -1106,12 +1106,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       disabled={actionId === selected.dbId}
                       className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs font-manrope cursor-pointer shadow-xs whitespace-nowrap"
                     >
-                      Save Receipt Code
+                      Confirm Code
                     </button>
                   </div>
-                  <p className="text-[10px] text-[#6F6F6F] dark:text-gray-400">
-                    Safaricom Sandbox Test Number: <strong className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">254708374149</strong>
-                  </p>
                 </div>
               </div>
             </div>
@@ -1119,7 +1116,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             {/* Status Workflow Editor */}
             <div className="pt-2 space-y-3 border-t border-[#e5e2e1] dark:border-white/10">
               <div className="space-y-1">
-                <label className="text-xs font-bold text-[#5E228B] dark:text-[#FED65B] font-manrope">Update Order Status</label>
+                <label className="text-xs font-bold text-[#5E228B] dark:text-[#FED65B] font-manrope">Order Status</label>
                 <select
                   value={selected.status}
                   disabled={actionId === selected.dbId}
@@ -1137,7 +1134,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-bold text-[#5E228B] dark:text-[#FED65B] font-manrope">Update Payment Status</label>
+                <label className="text-xs font-bold text-[#5E228B] dark:text-[#FED65B] font-manrope">Payment Status</label>
                 <select
                   value={selected.paymentStatus}
                   disabled={actionId === selected.dbId}

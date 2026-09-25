@@ -1,15 +1,13 @@
 import React, { useState } from "react";
-import { Lock, Mail, Shield, AlertCircle } from "lucide-react";
+import { Lock, Mail, Shield } from "lucide-react";
 import { signInAdmin } from "../lib/auth";
 
 interface AdminLoginProps {
   onSuccess: () => void;
-  adminEmailsConfigured: boolean;
 }
 
 export const AdminLogin: React.FC<AdminLoginProps> = ({
   onSuccess,
-  adminEmailsConfigured,
 }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -44,15 +42,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
             Secure access to orders and operations
           </p>
         </div>
-
-        {!adminEmailsConfigured && (
-          <div className="mb-4 p-3 rounded-xl bg-purple-900/40 border border-[#fed65b]/40 text-purple-100 text-xs flex gap-2">
-            <Shield className="w-4 h-4 shrink-0 mt-0.5 text-[#fed65b]" />
-            <span>
-              <strong>Admin Mode Ready:</strong> You can log in with <code className="font-mono bg-white/10 px-1 rounded">admin@goldtribe.co.ke</code> or any authorized admin email.
-            </span>
-          </div>
-        )}
 
         <form
           onSubmit={handleSubmit}

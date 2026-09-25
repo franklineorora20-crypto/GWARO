@@ -210,17 +210,17 @@ const [activeOrder, setActiveOrder] = useState<Order | null>(() => {
           {viewMode === 'customer' && (
             <>
               <form onSubmit={handleSearch} className="max-w-xl mx-auto pt-2">
-                <div className="bg-white/10 backdrop-blur-md p-2 rounded-full border border-white/20 flex items-center shadow-2xl">
+                <div className="bg-white/10 backdrop-blur-md p-1.5 sm:p-2 rounded-2xl sm:rounded-full border border-white/20 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-0 shadow-2xl">
                   <input
                     type="text"
                     value={searchId}
                     onChange={(e) => setSearchId(e.target.value)}
                     placeholder="Enter Order ID (e.g. GL-1234)"
-                    className="flex-1 bg-transparent border-none text-white placeholder-white/50 px-5 focus:outline-none font-worksans text-sm sm:text-base"
+                    className="flex-1 bg-transparent border-none text-white placeholder-white/50 px-4 sm:px-5 py-2.5 sm:py-0 focus:outline-none font-worksans text-sm sm:text-base"
                   />
                   <button
                     type="submit"
-                    className="bg-[#fed65b] text-[#341168] px-6 py-3 rounded-full font-bold font-manrope text-xs sm:text-sm hover:bg-white transition-all shadow-md cursor-pointer flex items-center gap-1.5 shrink-0"
+                    className="bg-[#fed65b] text-[#341168] px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-full font-bold font-manrope text-xs sm:text-sm hover:bg-white transition-all shadow-md cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
                   >
                     <Search className="w-4 h-4" />
                     <span>Track Now</span>

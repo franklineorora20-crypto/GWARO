@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Order, OrderItem } from '../types';
-import { X, Truck, CheckCircle2, Calendar, Clock, MapPin, Phone, CreditCard, Sparkles, RefreshCw } from 'lucide-react';
+import { X, Truck, CheckCircle2, Calendar, Clock, MapPin, Phone, CreditCard, Sparkles, RefreshCw, ChevronLeft } from 'lucide-react';
 import { INITIAL_SERVICES } from '../data/initialData';
 import { mapDbOrderToOrder } from '../lib/orders';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
@@ -24,8 +25,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   prefilledTotal,
   onOrderCreated
 }) => {
-  if (!isOpen) return null;
-
   // Step state: 1 = Details & Location, 2 = Date & Time, 3 = M-Pesa Payment Simulation & Confirmation
   const [step, setStep] = useState<number>(1);
 
@@ -36,6 +35,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [branch, setBranch] = useState<'Rongai Branch' | 'Ngong Branch'>('Rongai Branch');
   const [address, setAddress] = useState('');
   const [estatePreset, setEstatePreset] = useState('Rongai - Magadi Road');
+  const [formError, setFormError] = useState<string | null>(null);
   const [pickupDate, setPickupDate] = useState(() => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -46,20 +46,36 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [paymentMethod, setPaymentMethod] = useState<'mpesa' | 'cod'>('mpesa');
   const [mpesaNumber, setMpesaNumber] = useState('07');
 
-  const normalizePhoneNumber = (value: string) => String(value).trim().replace(/[^0-9]/g, '');
-  const isValidMpesaNumber = (value: string) => {
-    const digits = normalizePhoneNumber(value);
-    return /^07\d{8}$/.test(digits) || /^2547\d{8}$/.test(digits);
-  };
-
-  // M-Pesa STK Push Simulation state
-  const [stkState, setStkState] = useState<'idle' | 'sending' | 'prompted' | 'success'>('idle');
-
   // Selected Service items
   const [selectedServiceName, setSelectedServiceName] = useState<string>(
     preselectedServiceName || INITIAL_SERVICES[0].name
   );
   const [quantity, setQuantity] = useState<number>(1);
+
+  useEffect(() => {
+    if (preselectedServiceName) {
+      setSelectedServiceName(preselectedServiceName);
+    }
+  }, [preselectedServiceName]);
+
+  // Handle ESC key to close
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  const normalizePhoneNumber = (value: string) => String(value).trim().replace(/[^0-9]/g, '');
+  const isValidMpesaNumber = (value: string) => {
+    const digits = normalizePhoneNumber(value);
+    return /^07\d{8}$/.test(digits) || /^2547\d{8}$/.test(digits);
+  };
 
   const selectedService = INITIAL_SERVICES.find(s => s.name === selectedServiceName) || INITIAL_SERVICES[0];
 
@@ -73,7 +89,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   } else {
     computedItems = [
       {
-        serviceName: `${selectedService.name} (${selectedService.priceUnit})`,
+        serviceName: selectedService.name,
         quantity: quantity,
         unitPrice: selectedService.price
       }
@@ -81,7 +97,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     calculatedTotal = quantity * selectedService.price;
   }
 
-  // Pre-set common local estates
   const commonEstates = [
     'Rongai - Magadi Road',
     'Rongai - Hill Valley Place',
@@ -97,12 +112,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     if (!customerName.trim()) {
-      alert('Please enter your full name.');
+      setFormError('Please enter your full name before continuing.');
       return;
     }
     if (!phone || !isValidMpesaNumber(phone)) {
-      alert('Please enter a valid phone number (07XXXXXXXX or 2547XXXXXXXX).');
+      setFormError('Please enter a valid phone number (07XXXXXXXX or 2547XXXXXXXX).');
       return;
     }
     if (step === 1) {
@@ -111,68 +127,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     } else if (step === 2) {
       setStep(3);
     }
-  };
-
-  const [bookingError, setBookingError] = useState<string>('');
-
-  const handleConfirmAndPay = async () => {
-    if (paymentMethod === 'mpesa') {
-      setBookingError('');
-      setStkState('sending');
-
-      const fullAddressText = `${estatePreset}, ${address || 'Near landmark'}`;
-      const payload = {
-        customerName,
-        email: email || undefined,
-        phone: mpesaNumber,
-        branch,
-        address: fullAddressText,
-        items: computedItems,
-        totalPrice: calculatedTotal,
-        pickupDate,
-        timeSlot,
-        specialNotes: specialNotes || 'Handle with Goldtribe standard care.',
-        deliveryType: 'Delivery to Door',
-      };
-
-      try {
-        const response = await fetch('/api/stkpush', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        });
-
-        const text = await response.text();
-        let data: any = {};
-        if (text) {
-          try {
-            data = JSON.parse(text);
-          } catch {
-            data = { error: text };
-          }
-        }
-
-        if (response.ok && data.order) {
-          setStkState('prompted');
-          const newOrder = mapDbOrderToOrder(data.order);
-          onOrderCreated(newOrder);
-          onClose();
-          return;
-        }
-
-        console.warn("STK Push API warning or fallback needed:", data);
-        await completeOrderCreation('Paid via M-Pesa');
-        return;
-      } catch (error: any) {
-        console.warn('STK Push call failed, completing order locally:', error);
-        await completeOrderCreation('Paid via M-Pesa');
-        return;
-      }
-    }
-
-    await completeOrderCreation('Pay on Delivery');
   };
 
   const completeOrderCreation = async (payStatus: 'Paid via M-Pesa' | 'Payment Submitted' | 'Pay on Delivery', refCode?: string) => {
@@ -208,9 +162,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       ],
     };
 
-    // Save to Firebase Firestore if configured
     if (isFirebaseConfigured) {
-      await saveOrderToFirebase(newOrder);
+      try {
+        await saveOrderToFirebase(newOrder);
+      } catch (e) {
+        console.warn('Firebase order save notice:', e);
+      }
     }
 
     if (isSupabaseConfigured) {
@@ -243,220 +200,254 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           .single();
 
         if (!error && data) {
-          const formattedOrder = mapDbOrderToOrder(
-            data as Record<string, unknown>
-          );
+          const formattedOrder = mapDbOrderToOrder(data as Record<string, unknown>);
           onOrderCreated(formattedOrder);
-          setBookingError("");
-          setStkState("idle");
           onClose();
           return;
         }
       } catch (err: any) {
-        console.warn("Supabase insert notice, falling back to local order creation:", err);
+        console.warn("Supabase insert notice, falling back to local:", err);
       }
     }
 
-    // Fallback: created order locally
     onOrderCreated(newOrder);
-    setBookingError("");
-    setStkState("idle");
     onClose();
   };
+
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white text-[#1c1b1b] rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-[#e5e2e1] space-y-6 animate-bounce-in relative my-8">
-        {/* Modal Header */}
-        <div className="flex justify-between items-start border-b border-[#e5e2e1] pb-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      {/* Backdrop with smooth blur */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md -z-10"
+      />
+
+      {/* Modal Surface with Emil Kowalski Spring Entrance */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 16 }}
+        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+        className="bg-white dark:bg-[#130722] text-neutral-900 dark:text-white rounded-3xl max-w-xl w-full p-4 sm:p-7 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.35)] border border-black/[0.08] dark:border-white/[0.1] space-y-5 sm:space-y-6 relative my-auto max-h-[calc(100dvh-2rem)] overflow-y-auto overflow-x-hidden"
+      >
+        {/* Subtle Top Inset Highlight */}
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#FED65B]/60 to-transparent" />
+
+        {/* Modal Header with quiet metadata */}
+        <div className="flex justify-between items-start border-b border-black/[0.06] dark:border-white/[0.08] pb-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fed65b]/30 text-[#745c00] font-bold text-xs font-manrope">
-              <Truck className="w-3.5 h-3.5 text-[#341168]" />
-              <span>Free Pickup for Orders within 1km</span>
+            <div className="text-[11px] font-semibold text-[#5E228B] dark:text-[#FED65B] tracking-tight flex items-center gap-1.5">
+              <Truck className="w-3.5 h-3.5" />
+              <span>Doorstep Pickup & Return · Rongai & Ngong</span>
             </div>
-            <h3 className="text-2xl font-extrabold font-manrope text-[#341168] mt-1">
-              Book Doorstep Collection
+            <h3 className="text-xl sm:text-2xl font-extrabold font-manrope text-neutral-900 dark:text-white tracking-tight mt-1">
+              Book Concierge Collection
             </h3>
           </div>
-          <button
+          <motion.button
+            whileTap={{ scale: 0.9 }}
             onClick={onClose}
-            className="p-2 text-[#7b7581] hover:text-[#1c1b1b] rounded-full hover:bg-[#f6f3f2] transition-colors cursor-pointer"
+            className="p-1.5 text-neutral-400 hover:text-neutral-900 dark:hover:text-white rounded-full hover:bg-neutral-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+            aria-label="Close dialog"
           >
             <X className="w-5 h-5" />
-          </button>
+          </motion.button>
         </div>
 
-        {/* Multi-step Indicator */}
-        <div className="grid grid-cols-3 gap-2 text-center text-xs font-manrope font-bold">
-          <div className={`p-2 rounded-xl transition-all ${step >= 1 ? 'bg-[#341168] text-white' : 'bg-[#f6f3f2] text-[#7b7581]'}`}>
-            1. Details & Location
-          </div>
-          <div className={`p-2 rounded-xl transition-all ${step >= 2 ? 'bg-[#341168] text-white' : 'bg-[#f6f3f2] text-[#7b7581]'}`}>
-            2. Schedule Slot
-          </div>
-          <div className={`p-2 rounded-xl transition-all ${step >= 3 ? 'bg-[#341168] text-white' : 'bg-[#f6f3f2] text-[#7b7581]'}`}>
-            3. Payment & Submit
-          </div>
+        {/* Multi-step Indicator with Emil Kowalski fluid active pill */}
+        <div className="relative grid grid-cols-3 gap-1 p-1 rounded-xl bg-neutral-100 dark:bg-white/[0.05] text-center text-xs font-manrope font-semibold">
+          {[
+            { stepNum: 1, label: '1. Location' },
+            { stepNum: 2, label: '2. Schedule' },
+            { stepNum: 3, label: '3. Payment' },
+          ].map((s) => {
+            const isCurrent = step === s.stepNum;
+            const isDone = step > s.stepNum;
+            return (
+              <div
+                key={s.stepNum}
+                className={`relative py-1.5 px-2 rounded-lg transition-colors z-10 ${
+                  isCurrent
+                    ? 'text-white dark:text-[#0c0418] font-bold'
+                    : isDone
+                    ? 'text-[#5E228B] dark:text-[#FED65B]'
+                    : 'text-neutral-500'
+                }`}
+              >
+                {isCurrent && (
+                  <motion.div
+                    layoutId="activeBookingStep"
+                    transition={{ type: "spring", stiffness: 450, damping: 32 }}
+                    className="absolute inset-0 rounded-lg bg-[#5E228B] dark:bg-[#FED65B] shadow-xs -z-10"
+                  />
+                )}
+                <span>{s.label}</span>
+              </div>
+            );
+          })}
         </div>
 
         {/* Step 1: Customer Details & Service Selection */}
         {step === 1 && (
           <form onSubmit={handleNextStep} className="space-y-4 font-worksans">
             {!prefilledItems && (
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-[#341168] block font-manrope">Select Primary Service</label>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200 block font-manrope">
+                  Primary Garment Service
+                </label>
                 <select
                   value={selectedServiceName}
                   onChange={(e) => setSelectedServiceName(e.target.value)}
-                  className="w-full p-3 rounded-2xl border border-[#e5e2e1] bg-[#f6f3f2] text-sm focus:outline-none focus:ring-2 focus:ring-[#341168]"
+                  className="w-full p-3 rounded-xl border border-black/[0.08] dark:border-white/[0.1] bg-neutral-50 dark:bg-white/[0.04] text-xs sm:text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#5E228B]"
                 >
                   <optgroup label="--- Normal Laundry ---">
                     {INITIAL_SERVICES.filter(s => s.category === 'laundry').map(s => (
-                      <option key={s.id} value={s.name}>
-                        {s.name} — Ksh {s.price} ({s.priceUnit})
+                      <option key={s.id} value={s.name} className="dark:bg-[#130722]">
+                        {s.name} — Ksh {s.price}
                       </option>
                     ))}
                   </optgroup>
                   <optgroup label="--- Executive Dry Cleaning ---">
                     {INITIAL_SERVICES.filter(s => s.category === 'dry-cleaning').map(s => (
-                      <option key={s.id} value={s.name}>
-                        {s.name} — Ksh {s.price} ({s.priceUnit})
+                      <option key={s.id} value={s.name} className="dark:bg-[#130722]">
+                        {s.name} — Ksh {s.price}
                       </option>
                     ))}
                   </optgroup>
-                  <optgroup label="--- Duvet Clinic & Bedding ---">
+                  <optgroup label="--- Duvet Clinic ---">
                     {INITIAL_SERVICES.filter(s => s.category === 'duvet-clinic').map(s => (
-                      <option key={s.id} value={s.name}>
-                        {s.name} — Ksh {s.price} ({s.priceUnit})
-                      </option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="--- Carpets & Curtains ---">
-                    {INITIAL_SERVICES.filter(s => s.category === 'carpet-cleaning').map(s => (
-                      <option key={s.id} value={s.name}>
-                        {s.name} — Ksh {s.price} ({s.priceUnit})
-                      </option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="--- Janitorial Services ---">
-                    {INITIAL_SERVICES.filter(s => s.category === 'janitorial').map(s => (
-                      <option key={s.id} value={s.name}>
-                        {s.name} — Ksh {s.price} ({s.priceUnit})
+                      <option key={s.id} value={s.name} className="dark:bg-[#130722]">
+                        {s.name} — Ksh {s.price}
                       </option>
                     ))}
                   </optgroup>
                 </select>
 
                 <div className="flex items-center gap-3 pt-1">
-                  <span className="text-xs font-bold text-[#4a4550]">Quantity / Weight:</span>
+                  <span className="text-xs font-semibold text-neutral-600 dark:text-neutral-400">Load / Quantity:</span>
                   <input
                     type="number"
                     min={1}
-                    max={100}
+                    max={50}
                     value={quantity}
                     onChange={(e) => setQuantity(Number(e.target.value))}
-                    className="w-20 p-2 rounded-xl border border-[#e5e2e1] text-center font-bold text-sm"
+                    className="w-16 p-1.5 rounded-lg border border-black/[0.08] dark:border-white/[0.1] text-center font-bold text-xs tabular-nums dark:bg-white/[0.04]"
                   />
-                  <span className="text-xs text-[#7b7581] font-bold">{selectedService.priceUnit}</span>
+                  <span className="text-xs text-neutral-400">{selectedService.priceUnit}</span>
                 </div>
               </div>
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-bold text-[#341168] block font-manrope mb-1">Your Full Name *</label>
+                <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200 block font-manrope mb-1">
+                  Full Name *
+                </label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. David Njoroge"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full p-3 rounded-2xl border border-[#e5e2e1] bg-[#f6f3f2] text-sm focus:ring-2 focus:ring-[#341168]"
+                  className="w-full p-3 rounded-xl border border-black/[0.08] dark:border-white/[0.1] bg-neutral-50 dark:bg-white/[0.04] text-xs sm:text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#5E228B]"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-[#341168] block font-manrope mb-1">Phone Number (M-Pesa) *</label>
+                <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200 block font-manrope mb-1">
+                  Phone (M-Pesa) *
+                </label>
                 <input
                   type="tel"
                   required
-                  placeholder="e.g. 0712345678"
+                  placeholder="07XXXXXXXX"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full p-3 rounded-2xl border border-[#e5e2e1] bg-[#f6f3f2] text-sm focus:ring-2 focus:ring-[#341168]"
+                  className="w-full p-3 rounded-xl border border-black/[0.08] dark:border-white/[0.1] bg-neutral-50 dark:bg-white/[0.04] text-xs sm:text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#5E228B] tabular-nums"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-[#341168] block font-manrope mb-1">Email Address (Optional)</label>
-              <input
-                type="email"
-                placeholder="e.g. david@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 rounded-2xl border border-[#e5e2e1] bg-[#f6f3f2] text-sm focus:ring-2 focus:ring-[#341168]"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-[#341168] block font-manrope mb-1">Select Servicing Branch</label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setBranch('Rongai Branch')}
-                  className={`p-3 rounded-2xl border text-xs font-bold font-manrope transition-all cursor-pointer ${
-                    branch === 'Rongai Branch'
-                      ? 'bg-[#341168] text-white border-[#341168] shadow-md'
-                      : 'bg-[#f6f3f2] text-[#4a4550] border-[#e5e2e1]'
-                  }`}
-                >
-                  Rongai Hub (Magadi Rd)
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setBranch('Ngong Branch')}
-                  className={`p-3 rounded-2xl border text-xs font-bold font-manrope transition-all cursor-pointer ${
-                    branch === 'Ngong Branch'
-                      ? 'bg-[#341168] text-white border-[#341168] shadow-md'
-                      : 'bg-[#f6f3f2] text-[#4a4550] border-[#e5e2e1]'
-                  }`}
-                >
-                  Ngong Hub (Country Arcade)
-                </button>
+              <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200 block font-manrope mb-1">
+                Servicing Hub
+              </label>
+              <div className="grid grid-cols-2 gap-2.5">
+                {[
+                  { name: 'Rongai Branch', label: 'Rongai Hub (Magadi Rd)' },
+                  { name: 'Ngong Branch', label: 'Ngong Hub (Country Arcade)' }
+                ].map((b) => (
+                  <button
+                    key={b.name}
+                    type="button"
+                    onClick={() => setBranch(b.name as any)}
+                    className={`p-2.5 rounded-xl border text-xs font-bold font-manrope transition-all cursor-pointer ${
+                      branch === b.name
+                        ? 'bg-[#5E228B] text-white border-transparent shadow-xs'
+                        : 'bg-neutral-50 dark:bg-white/[0.04] text-neutral-600 dark:text-neutral-300 border-black/[0.08] dark:border-white/[0.08]'
+                    }`}
+                  >
+                    {b.label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div>
-              <label className="text-xs font-bold text-[#341168] block font-manrope mb-1">Estate / Neighborhood</label>
-              <select
-                value={estatePreset}
-                onChange={(e) => setEstatePreset(e.target.value)}
-                className="w-full p-3 rounded-2xl border border-[#e5e2e1] bg-[#f6f3f2] text-sm focus:ring-2 focus:ring-[#341168]"
-              >
-                {commonEstates.map((est, i) => (
-                  <option key={i} value={est}>{est}</option>
-                ))}
-              </select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200 block font-manrope mb-1">
+                  Estate / Area
+                </label>
+                <select
+                  value={estatePreset}
+                  onChange={(e) => setEstatePreset(e.target.value)}
+                  className="w-full p-3 rounded-xl border border-black/[0.08] dark:border-white/[0.1] bg-neutral-50 dark:bg-white/[0.04] text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#5E228B]"
+                >
+                  {commonEstates.map((est, i) => (
+                    <option key={i} value={est} className="dark:bg-[#130722]">{est}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200 block font-manrope mb-1">
+                  House / Gate Landmark
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Hill Valley Court, Hse B4"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="w-full p-3 rounded-xl border border-black/[0.08] dark:border-white/[0.1] bg-neutral-50 dark:bg-white/[0.04] text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#5E228B]"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="text-xs font-bold text-[#341168] block font-manrope mb-1">House / Apartment / House No.</label>
-              <input
-                type="text"
-                placeholder="e.g. Hill Valley Apartments, House B4"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                className="w-full p-3 rounded-2xl border border-[#e5e2e1] bg-[#f6f3f2] text-sm focus:ring-2 focus:ring-[#341168]"
-              />
-            </div>
+            <AnimatePresence>
+              {formError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: 'auto' }}
+                  exit={{ opacity: 0, y: -6, height: 0 }}
+                  transition={{ type: "spring", stiffness: 450, damping: 28 }}
+                  className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-600 dark:text-rose-400 text-xs font-medium flex items-center gap-2 overflow-hidden"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+                  <span>{formError}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            <button
+            <motion.button
+              whileTap={{ scale: 0.98 }}
               type="submit"
-              className="w-full py-4 rounded-full bg-[#341168] text-white font-extrabold font-manrope text-sm hover:bg-[#4b2c7f] transition-colors cursor-pointer shadow-md"
+              className="w-full py-3.5 rounded-full bg-[#5E228B] hover:bg-[#501a78] text-white font-bold font-manrope text-sm transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_2px_8px_rgba(94,34,139,0.3)] mt-2"
             >
-              Continue to Schedule Slot
-            </button>
+              Continue to Schedule Window
+            </motion.button>
           </form>
         )}
 
@@ -465,98 +456,93 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           <form onSubmit={handleNextStep} className="space-y-4 font-worksans">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-bold text-[#341168] block font-manrope mb-1">Preferred Pickup Date</label>
+                <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200 block font-manrope mb-1">
+                  Pickup Date
+                </label>
                 <input
                   type="date"
                   required
                   value={pickupDate}
                   onChange={(e) => setPickupDate(e.target.value)}
-                  className="w-full p-3 rounded-2xl border border-[#e5e2e1] bg-[#f6f3f2] text-sm focus:ring-2 focus:ring-[#341168]"
+                  className="w-full p-3 rounded-xl border border-black/[0.08] dark:border-white/[0.1] bg-neutral-50 dark:bg-white/[0.04] text-xs sm:text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#5E228B]"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-[#341168] block font-manrope mb-1">Preferred Time Slot</label>
+                <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200 block font-manrope mb-1">
+                  Rider Window
+                </label>
                 <select
                   value={timeSlot}
                   onChange={(e) => setTimeSlot(e.target.value)}
-                  className="w-full p-3 rounded-2xl border border-[#e5e2e1] bg-[#f6f3f2] text-sm focus:ring-2 focus:ring-[#341168]"
+                  className="w-full p-3 rounded-xl border border-black/[0.08] dark:border-white/[0.1] bg-neutral-50 dark:bg-white/[0.04] text-xs sm:text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#5E228B]"
                 >
-                  <option value="Morning (8:00 AM - 11:00 AM)">Morning (8:00 AM - 11:00 AM)</option>
-                  <option value="Afternoon (1:00 PM - 4:00 PM)">Afternoon (1:00 PM - 4:00 PM)</option>
-                  <option value="Evening (5:00 PM - 8:00 PM)">Evening (5:00 PM - 8:00 PM)</option>
+                  <option value="Morning (8:00 AM - 11:00 AM)" className="dark:bg-[#130722]">Morning (8:00 AM - 11:00 AM)</option>
+                  <option value="Afternoon (1:00 PM - 4:00 PM)" className="dark:bg-[#130722]">Afternoon (1:00 PM - 4:00 PM)</option>
+                  <option value="Evening (5:00 PM - 8:00 PM)" className="dark:bg-[#130722]">Evening (5:00 PM - 8:00 PM)</option>
                 </select>
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-[#341168] block font-manrope mb-1">
-                Garment Care Instructions (Optional)
+              <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200 block font-manrope mb-1">
+                Special Garment Notes (Optional)
               </label>
               <textarea
-                rows={3}
-                placeholder="e.g. Heavy starch on shirt collars, extra lavender softener for duvet, check coat left pocket..."
+                rows={2}
+                placeholder="e.g. Crisp collar starch, delicate buttons on blazer..."
                 value={specialNotes}
                 onChange={(e) => setSpecialNotes(e.target.value)}
-                className="w-full p-3 rounded-2xl border border-[#e5e2e1] bg-[#f6f3f2] text-sm focus:ring-2 focus:ring-[#341168]"
+                className="w-full p-3 rounded-xl border border-black/[0.08] dark:border-white/[0.1] bg-neutral-50 dark:bg-white/[0.04] text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#5E228B]"
               />
             </div>
 
-            <div className="p-4 bg-[#f6f3f2] rounded-2xl border border-[#e5e2e1] space-y-2">
-              <div className="flex justify-between items-center">
-                <div className="text-xs font-bold font-manrope text-[#341168]">Summary of Order:</div>
-                <div className="text-[11px] font-extrabold text-[#5E228B] bg-purple-100 px-2.5 py-0.5 rounded-full flex items-center gap-1 font-manrope">
-                  <Calendar className="w-3 h-3 text-[#5E228B]" />
-                  <span>{pickupDate ? pickupDate : 'Date Selected'}</span>
-                </div>
+            {/* Summary Box */}
+            <div className="p-4 rounded-xl bg-neutral-50 dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.08] space-y-2 text-xs">
+              <div className="flex justify-between items-center text-neutral-500">
+                <span>Total Items</span>
+                <span>{computedItems.length} service item(s)</span>
               </div>
-              {computedItems.map((item, idx) => (
-                <div key={idx} className="flex justify-between text-xs font-worksans text-[#1c1b1b]">
-                  <span>{item.serviceName} x{item.quantity}</span>
-                  <span className="font-bold">Ksh {(item.quantity * item.unitPrice).toLocaleString()}</span>
-                </div>
-              ))}
-              <div className="flex justify-between items-center text-xs text-[#5E228B] bg-purple-50/80 p-2 rounded-xl border border-purple-200 mt-1">
-                <span className="font-bold font-manrope">Scheduled Pickup Window:</span>
-                <span className="font-extrabold font-mono">{pickupDate} · {timeSlot}</span>
-              </div>
-              <div className="border-t border-[#e5e2e1] pt-2 flex justify-between font-bold text-sm font-manrope text-[#341168]">
-                <span>Total Payable:</span>
-                <span className="text-[#735c00]">Ksh {calculatedTotal.toLocaleString()}</span>
+              <div className="flex justify-between items-center font-bold text-sm text-neutral-900 dark:text-white pt-2 border-t border-black/[0.06] dark:border-white/[0.08]">
+                <span>Estimated Due</span>
+                <span className="text-[#5E228B] dark:text-[#FED65B] tabular-nums font-manrope font-extrabold text-base">
+                  Ksh {calculatedTotal.toLocaleString()}
+                </span>
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-2.5 pt-1">
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="py-3 px-5 rounded-full border border-[#e5e2e1] text-xs font-bold font-manrope hover:bg-[#f6f3f2] cursor-pointer"
+                className="py-3 px-4 rounded-full border border-black/[0.08] dark:border-white/[0.1] text-xs font-bold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-white/[0.05] cursor-pointer"
               >
                 Back
               </button>
-              <button
+              <motion.button
+                whileTap={{ scale: 0.98 }}
                 type="submit"
-                className="flex-1 py-4 rounded-full bg-[#341168] text-white font-extrabold font-manrope text-sm hover:bg-[#4b2c7f] transition-colors cursor-pointer shadow-md"
+                className="flex-1 py-3 rounded-full bg-[#5E228B] hover:bg-[#501a78] text-white font-bold font-manrope text-xs sm:text-sm cursor-pointer shadow-xs"
               >
-                Proceed to Payment
-              </button>
+                Continue to Payment
+              </motion.button>
             </div>
           </form>
         )}
 
-        {/* Step 3: Payment & Submit */}
+        {/* Step 3: Payment Method & Submit */}
         {step === 3 && (
-          <div className="space-y-5 font-worksans">
-            <div className="flex items-center justify-between bg-[#f6f3f2] p-2 rounded-2xl border border-[#e5e2e1]">
-              <span className="text-xs font-bold text-[#341168] font-manrope px-2">Payment Option:</span>
-              <div className="flex gap-2">
+          <div className="space-y-4 font-worksans">
+            <div className="flex items-center justify-between p-1.5 rounded-xl bg-neutral-100 dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.08]">
+              <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300 font-manrope px-2">Payment Method:</span>
+              <div className="flex gap-1.5">
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('mpesa')}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold font-manrope transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold font-manrope transition-all cursor-pointer ${
                     paymentMethod === 'mpesa'
-                      ? 'bg-[#341168] text-white shadow-sm'
-                      : 'bg-white text-[#4a4550] hover:bg-[#e5e2e1]'
+                      ? 'bg-[#5E228B] text-white shadow-2xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
                   }`}
                 >
                   M-PESA Paybill
@@ -564,10 +550,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('cod')}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold font-manrope transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold font-manrope transition-all cursor-pointer ${
                     paymentMethod === 'cod'
-                      ? 'bg-[#341168] text-white shadow-sm'
-                      : 'bg-white text-[#4a4550] hover:bg-[#e5e2e1]'
+                      ? 'bg-[#5E228B] text-white shadow-2xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
                   }`}
                 >
                   Pay on Delivery
@@ -585,34 +571,35 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 }}
               />
             ) : (
-              <div className="p-5 bg-white rounded-2xl border border-[#e5e2e1] space-y-4 text-center">
-                <div className="text-sm font-bold text-[#341168] font-manrope">
-                  Pay on Delivery Selected
+              <div className="p-5 bg-neutral-50 dark:bg-white/[0.04] rounded-2xl border border-black/[0.06] dark:border-white/[0.08] space-y-4 text-center">
+                <div className="text-sm font-bold text-neutral-900 dark:text-white font-manrope">
+                  Doorstep Payment Option
                 </div>
-                <p className="text-xs text-[#7b7581]">
-                  Pay via Cash or M-Pesa Till upon delivery. Amount due: <strong className="text-[#341168] font-mono">Ksh {calculatedTotal.toLocaleString()}</strong>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  Pay the Goldtribe rider directly via Cash or M-Pesa Till upon delivery. Amount due: <strong className="text-[#5E228B] dark:text-[#FED65B] tabular-nums">Ksh {calculatedTotal.toLocaleString()}</strong>
                 </p>
-                <div className="flex gap-3 pt-2">
+                <div className="flex gap-2.5 pt-2">
                   <button
                     type="button"
                     onClick={() => setStep(2)}
-                    className="py-3 px-5 rounded-full border border-[#e5e2e1] text-xs font-bold font-manrope hover:bg-[#f6f3f2] cursor-pointer"
+                    className="py-3 px-4 rounded-full border border-black/[0.08] dark:border-white/[0.1] text-xs font-bold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-white/[0.05] cursor-pointer"
                   >
                     Back
                   </button>
-                  <button
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
                     type="button"
                     onClick={() => completeOrderCreation('Pay on Delivery')}
-                    className="flex-1 py-4 rounded-full bg-[#6B46C1] text-white font-extrabold font-manrope text-sm hover:bg-[#341168] transition-all cursor-pointer shadow-md"
+                    className="flex-1 py-3 rounded-full bg-[#5E228B] hover:bg-[#501a78] text-white font-bold font-manrope text-xs sm:text-sm cursor-pointer shadow-xs"
                   >
-                    Confirm Order (Pay on Delivery)
-                  </button>
+                    Confirm Booking
+                  </motion.button>
                 </div>
               </div>
             )}
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 };

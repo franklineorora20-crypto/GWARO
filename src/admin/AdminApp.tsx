@@ -4,11 +4,6 @@ import { getAdminSession, onAdminAuthChange } from "../lib/auth";
 import { AdminLogin } from "./AdminLogin";
 import { AdminDashboard } from "./AdminDashboard";
 
-function adminEmailsConfigured(): boolean {
-  const raw = import.meta.env.VITE_ADMIN_EMAILS ?? "";
-  return raw.split(",").some((e) => e.trim().length > 0);
-}
-
 export default function AdminApp() {
   const [session, setSession] = useState<Session | null>(null);
   const [booting, setBooting] = useState(true);
@@ -33,7 +28,6 @@ export default function AdminApp() {
   if (!session) {
     return (
       <AdminLogin
-        adminEmailsConfigured={adminEmailsConfigured()}
         onSuccess={() => {
           getAdminSession().then(setSession);
         }}

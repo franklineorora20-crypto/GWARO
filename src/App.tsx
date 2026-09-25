@@ -24,6 +24,7 @@ import { TrustBanner } from './components/TrustBanner';
 import { QuickHub } from './components/QuickHub';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { MobileBottomBar } from './components/MobileBottomBar';
+import { CommandMenu } from './components/CommandMenu';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
 import { getOrders, mapDbOrderToOrder } from './lib/orders';
 import { 
@@ -147,9 +148,22 @@ export default function App() {
 
   // Booking Modal state
   const [bookingOpen, setBookingOpen] = useState(false);
+  const [commandMenuOpen, setCommandMenuOpen] = useState(false);
   const [preselectedService, setPreselectedService] = useState<string | undefined>();
   const [prefilledItems, setPrefilledItems] = useState<OrderItem[] | undefined>();
   const [prefilledTotal, setPrefilledTotal] = useState<number | undefined>();
+
+  // Global ⌘K / Ctrl+K keyboard shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setCommandMenuOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Toast State
   const [toast, setToast] = useState<ToastMessage | null>(null);
@@ -201,8 +215,21 @@ export default function App() {
     }
   }, [loadOrders]);
 
-  const showToast = (title: string, message?: string, type: 'success' | 'error' | 'info' = 'success') => {
-    setToast({ id: `${Date.now()}`, title, message, type });
+  const showToast = (
+    title: string, 
+    message?: string, 
+    type: 'success' | 'error' | 'info' = 'success',
+    options?: { copyText?: string; actionLabel?: string; onAction?: () => void }
+  ) => {
+    setToast({ 
+      id: `${Date.now()}`, 
+      title, 
+      message, 
+      type,
+      copyText: options?.copyText,
+      actionLabel: options?.actionLabel,
+      onAction: options?.onAction
+    });
   };
 
   const handleSelectPage = (page: PageType) => {
@@ -287,7 +314,7 @@ export default function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#fcf9f8] dark:bg-[#0f0717] text-[#1c1b1b] dark:text-gray-100 font-worksans selection:bg-[#fed65b] selection:text-[#745c00] relative transition-colors duration-200">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#fcf9f8] dark:bg-[#0f0717] text-[#1c1b1b] dark:text-gray-100 font-worksans selection:bg-[#fed65b] selection:text-[#745c00] relative transition-colors duration-200">
       {/* Navbar */}
       <Navbar
         onOpenBooking={() => handleOpenBooking()}
@@ -303,7 +330,7 @@ export default function App() {
       />
 
       {/* Dynamic Multi-Page Screen Views */}
-      <main className="min-h-[80vh] pt-16 sm:pt-20">
+      <main className="min-h-[80vh] pt-16 sm:pt-20 pb-28 sm:pb-20 lg:pb-12 w-full max-w-full overflow-x-hidden">
         <AnimatePresence mode="wait">
           {activePage === 'home' && (
             <motion.div
@@ -312,7 +339,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.25 }}
-              className="space-y-12 pb-16"
+              className="space-y-12 pb-8 sm:pb-12 w-full max-w-full overflow-x-hidden"
             >
               {/* Hero Banner */}
               <Hero
@@ -408,10 +435,10 @@ export default function App() {
               className="space-y-8 pb-16"
             >
               <PageHeader
-                title="Live Garment Order Tracker"
-                subtitle="Track real-time washing status steps, view customer order history & generate official digital receipts"
+                title="Garment Order Tracker"
+                subtitle="Follow washing and finishing progress in real-time, inspect past bookings & download official receipts"
                 icon={Search}
-                badge="Live Status & History"
+                badge="Order Tracking & Receipts"
                 onBackToHome={() => handleSelectPage('home')}
                 onOpenBooking={() => handleOpenBooking()}
                 activePage={activePage}
@@ -431,10 +458,10 @@ export default function App() {
               className="space-y-8 pb-16"
             >
               <PageHeader
-                title="Gold Pass VIP Subscriptions"
-                subtitle="Monthly laundry passes tailored for individuals, families, and high-frequency washing in Rongai & Ngong"
+                title="Gold Pass VIP Memberships"
+                subtitle="Monthly laundry packages tailored for individuals, families, and high-frequency washing in Rongai & Ngong"
                 icon={Crown}
-                badge="VIP Laundry Passes"
+                badge="VIP Subscriptions"
                 onBackToHome={() => handleSelectPage('home')}
                 onOpenBooking={() => handleOpenBooking()}
                 activePage={activePage}

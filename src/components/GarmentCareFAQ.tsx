@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { FAQS } from '../data/initialData';
 import { HelpCircle, ChevronDown, Sparkles, BookOpen, ShieldCheck } from 'lucide-react';
 
@@ -26,68 +27,96 @@ export const GarmentCareFAQ: React.FC = () => {
   ];
 
   return (
-    <section id="faq" className="py-16 sm:py-24 bg-[#f6f3f2] relative">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-12">
+    <section id="faq" className="py-20 sm:py-28 bg-[#FAFAFB] dark:bg-[#0c0418] relative transition-colors duration-200 border-t border-black/[0.06] dark:border-white/[0.06]">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-12">
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#341168]/10 text-[#341168] font-bold text-xs uppercase font-manrope">
-            <HelpCircle className="w-3.5 h-3.5 text-[#735c00]" />
-            <span>Got Questions?</span>
+        <div className="text-center max-w-2xl mx-auto space-y-3">
+          <div className="text-xs font-semibold tracking-tight text-[#5E228B] dark:text-[#FED65B]">
+            Care Advisory & Knowledge · Fabric Preservation
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold font-manrope text-[#341168]">
-            FAQ & Garment Care Knowledge
+          <h2 className="text-3xl sm:text-4xl font-extrabold font-manrope text-neutral-900 dark:text-white tracking-[-0.02em] [text-wrap:balance]">
+            Frequently Asked Questions
           </h2>
-          <p className="text-sm font-worksans text-[#4a4550]">
-            Everything you need to know about our collection logistics, payment methods, and fabric preservation.
+          <p className="text-sm font-worksans text-neutral-600 dark:text-neutral-400 leading-relaxed">
+            Everything you need to know about collection logistics, payment verification, and fabric preservation.
           </p>
 
-          {/* Toggle Tabs */}
-          <div className="inline-flex p-1.5 bg-white rounded-full border border-[#e5e2e1] shadow-xs">
+          {/* Emil Kowalski Segmented Switcher */}
+          <div className="flex justify-center p-1 rounded-full bg-black/[0.04] dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.08] w-fit mx-auto mt-4">
             <button
               onClick={() => setActiveTab('faqs')}
-              className={`px-5 py-2 rounded-full text-xs font-bold font-manrope transition-all cursor-pointer ${
-                activeTab === 'faqs' ? 'bg-[#341168] text-white shadow-sm' : 'text-[#4a4550] hover:text-[#341168]'
+              className={`relative px-4 py-2 rounded-full text-xs font-semibold font-manrope transition-colors cursor-pointer z-10 ${
+                activeTab === 'faqs' ? 'text-white dark:text-[#0c0418]' : 'text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white'
               }`}
             >
-              Frequently Asked Questions
+              {activeTab === 'faqs' && (
+                <motion.div
+                  layoutId="faqTabPill"
+                  transition={{ type: "spring", stiffness: 440, damping: 32 }}
+                  className="absolute inset-0 rounded-full bg-[#5E228B] dark:bg-[#FED65B] shadow-[0_2px_8px_rgba(94,34,139,0.25)] -z-10"
+                />
+              )}
+              <span>General Questions</span>
             </button>
+
             <button
               onClick={() => setActiveTab('stain-guide')}
-              className={`px-5 py-2 rounded-full text-xs font-bold font-manrope transition-all cursor-pointer ${
-                activeTab === 'stain-guide' ? 'bg-[#341168] text-white shadow-sm' : 'text-[#4a4550] hover:text-[#341168]'
+              className={`relative px-4 py-2 rounded-full text-xs font-semibold font-manrope transition-colors cursor-pointer z-10 ${
+                activeTab === 'stain-guide' ? 'text-white dark:text-[#0c0418]' : 'text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white'
               }`}
             >
-              Fabric Care Guide
+              {activeTab === 'stain-guide' && (
+                <motion.div
+                  layoutId="faqTabPill"
+                  transition={{ type: "spring", stiffness: 440, damping: 32 }}
+                  className="absolute inset-0 rounded-full bg-[#5E228B] dark:bg-[#FED65B] shadow-[0_2px_8px_rgba(94,34,139,0.25)] -z-10"
+                />
+              )}
+              <span>Fabric Care Guide</span>
             </button>
           </div>
         </div>
 
-        {/* Tab 1: FAQs */}
+        {/* Tab 1: FAQs with Emil Kowalski Spring Accordion */}
         {activeTab === 'faqs' && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {FAQS.map((faq, idx) => {
               const isOpen = openFaq === idx;
 
               return (
                 <div
                   key={idx}
-                  className="bg-white rounded-2xl border border-[#e5e2e1] overflow-hidden transition-all shadow-xs"
+                  className="bg-white dark:bg-[#130722] rounded-2xl border border-black/[0.08] dark:border-white/[0.1] shadow-2xs overflow-hidden transition-colors"
                 >
                   <button
                     onClick={() => setOpenFaq(isOpen ? null : idx)}
-                    className="w-full p-5 text-left flex justify-between items-center font-bold font-manrope text-sm sm:text-base text-[#341168] hover:bg-[#f6f3f2] transition-colors cursor-pointer"
+                    className="w-full p-5 text-left flex justify-between items-center font-bold font-manrope text-sm sm:text-base text-neutral-900 dark:text-white hover:bg-neutral-50/50 dark:hover:bg-white/[0.02] transition-colors cursor-pointer"
                   >
-                    <span>{faq.q}</span>
-                    <ChevronDown className={`w-5 h-5 text-[#735c00] transition-transform duration-300 ${
-                      isOpen ? 'rotate-180' : ''
-                    }`} />
+                    <span className="pr-4">{faq.q}</span>
+                    <motion.div
+                      animate={{ rotate: isOpen ? 180 : 0 }}
+                      transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                      className="shrink-0 text-[#5E228B] dark:text-[#FED65B]"
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                    </motion.div>
                   </button>
 
-                  {isOpen && (
-                    <div className="p-5 pt-0 text-xs sm:text-sm font-worksans text-[#4a4550] leading-relaxed border-t border-[#f6f3f2] animate-fade-in">
-                      {faq.a}
-                    </div>
-                  )}
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="p-5 pt-0 text-xs sm:text-sm font-worksans text-neutral-600 dark:text-neutral-300 leading-relaxed border-t border-black/[0.04] dark:border-white/[0.06]">
+                          {faq.a}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               );
             })}
@@ -96,17 +125,23 @@ export const GarmentCareFAQ: React.FC = () => {
 
         {/* Tab 2: Garment Care Guide */}
         {activeTab === 'stain-guide' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {stainGuide.map((item, idx) => (
-              <div key={idx} className="bg-white p-6 rounded-3xl border border-[#e5e2e1] shadow-xs space-y-3">
-                <div className="flex items-center gap-2 text-[#341168] font-bold font-manrope text-sm">
-                  <BookOpen className="w-4 h-4 text-[#735c00]" />
+              <motion.div
+                key={idx}
+                whileHover={{ y: -2 }}
+                transition={{ type: "spring", stiffness: 350, damping: 26 }}
+                className="bg-white dark:bg-[#130722] rounded-2xl p-6 border border-black/[0.08] dark:border-white/[0.1] shadow-2xs space-y-2 relative overflow-hidden"
+              >
+                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#FED65B]/40 to-transparent" />
+                <div className="text-xs font-bold font-manrope text-[#5E228B] dark:text-[#FED65B] flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" />
                   <span>{item.fabric}</span>
                 </div>
-                <p className="text-xs sm:text-sm font-worksans text-[#4a4550] leading-relaxed">
+                <p className="text-xs font-worksans text-neutral-600 dark:text-neutral-300 leading-relaxed">
                   {item.tip}
                 </p>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}

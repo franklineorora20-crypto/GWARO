@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { MessageCircle, X, Sparkles, Send } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { MessageCircle, X, Send } from 'lucide-react';
 
 interface FloatingWhatsAppProps {
   phone?: string;
@@ -17,50 +18,57 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
   return (
     <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40 flex flex-col items-end gap-2 pointer-events-auto">
       {/* Quick Greeting Tooltip */}
-      {openTooltip && (
-        <div className="bg-white dark:bg-[#1a0c2a] text-[#2F2F2F] dark:text-white border border-[#E5E2E1] dark:border-white/20 shadow-2xl rounded-2xl p-3 max-w-[240px] text-xs font-worksans relative animate-bounce-subtle">
-          <button
-            onClick={() => setOpenTooltip(false)}
-            className="absolute -top-2 -right-2 w-5 h-5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-full flex items-center justify-center text-[10px] hover:bg-rose-500 hover:text-white transition-colors cursor-pointer"
-            title="Close"
+      <AnimatePresence>
+        {openTooltip && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 6, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 28 }}
+            className="bg-white dark:bg-[#130722] text-neutral-900 dark:text-white border border-black/[0.08] dark:border-white/[0.1] shadow-xl rounded-2xl p-3.5 max-w-[240px] text-xs font-worksans relative"
           >
-            <X className="w-3 h-3" />
-          </button>
-          <div className="flex items-center gap-1.5 text-[#25D366] font-bold font-manrope text-[11px]">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Instant Kenya WhatsApp</span>
-          </div>
-          <p className="mt-1 text-[#2D2D2D] dark:text-gray-200 font-medium leading-tight">
-            Need a quick laundry quote or pickup in Rongai or Ngong?
-          </p>
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-[#25D366] hover:underline"
-          >
-            <span>Chat directly now</span>
-            <Send className="w-3 h-3" />
-          </a>
-        </div>
-      )}
+            <button
+              onClick={() => setOpenTooltip(false)}
+              className="absolute top-2 right-2 p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-white rounded-md transition-colors cursor-pointer"
+              title="Close"
+              aria-label="Close tooltip"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+            <div className="text-[#25D366] font-bold font-manrope text-[11px] mb-1">
+              WhatsApp Concierge
+            </div>
+            <p className="text-neutral-600 dark:text-neutral-300 font-medium leading-relaxed">
+              Need a rapid quote or immediate rider dispatch in Rongai & Ngong?
+            </p>
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2.5 inline-flex items-center gap-1.5 text-[11px] font-bold text-[#25D366] hover:underline"
+            >
+              <span>Chat directly now</span>
+              <Send className="w-3 h-3" />
+            </a>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main WhatsApp Button */}
-      <a
+      <motion.a
+        whileTap={{ scale: 0.94 }}
         href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="group bg-[#25D366] hover:bg-[#20ba5a] text-white p-3.5 sm:p-4 rounded-full shadow-2xl hover:shadow-emerald-500/30 transition-all duration-300 flex items-center gap-2.5 active:scale-95 cursor-pointer relative"
+        className="bg-[#25D366] hover:bg-[#20ba5a] text-white p-3.5 rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_8px_24px_rgba(37,211,102,0.35)] transition-colors flex items-center gap-2 cursor-pointer relative"
         title="Chat on WhatsApp"
         aria-label="Chat on WhatsApp"
       >
-        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-rose-500 rounded-full border-2 border-white animate-ping" />
-        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-rose-500 rounded-full border-2 border-white" />
-        <MessageCircle className="w-6 h-6 fill-white text-[#25D366]" />
-        <span className="hidden md:inline font-extrabold font-manrope text-xs tracking-tight pr-1">
-          Chat on WhatsApp
+        <MessageCircle className="w-5 h-5 fill-white text-[#25D366]" />
+        <span className="hidden md:inline font-bold font-manrope text-xs tracking-tight pr-1">
+          WhatsApp Chat
         </span>
-      </a>
+      </motion.a>
     </div>
   );
 };

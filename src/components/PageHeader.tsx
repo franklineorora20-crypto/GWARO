@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Home, LucideIcon, Sparkles } from 'lucide-react';
+import { ArrowLeft, Home, LucideIcon } from 'lucide-react';
 import { PageType } from '../types';
 
 interface PageHeaderProps {
@@ -18,88 +18,88 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   title,
   subtitle,
   icon: Icon,
-  badge = 'Goldtribe Link Page',
+  badge = 'Goldtribe Concierge',
   onBackToHome,
-  onOpenBooking,
   activePage,
   onSelectPage,
 }) => {
   return (
-    <div className="bg-[#341168] text-white pt-24 sm:pt-28 pb-12 px-4 sm:px-6 relative overflow-hidden shadow-lg">
+    <div className="bg-[#120524] text-white pt-24 sm:pt-28 pb-10 px-4 sm:px-6 relative overflow-hidden border-b border-white/[0.08]">
       {/* Background Subtle Accents */}
-      <div className="absolute -right-12 -top-12 w-64 h-64 bg-[#fed65b]/10 rounded-full blur-2xl pointer-events-none" />
-      <div className="absolute left-1/3 -bottom-20 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute right-0 top-0 w-80 h-80 bg-[#5E228B]/[0.15] rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute left-1/4 -bottom-10 w-96 h-96 bg-[#FED65B]/[0.05] rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto relative z-10 space-y-6">
-        {/* Breadcrumb Bar */}
+        {/* Unboxed Breadcrumb Row */}
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-manrope">
-          <div className="flex items-center gap-2 text-white/70">
+          <div className="flex items-center gap-2 text-white/60">
             <button
               onClick={onBackToHome}
-              className="hover:text-[#fed65b] transition-colors flex items-center gap-1 font-bold cursor-pointer"
+              className="hover:text-white transition-colors flex items-center gap-1 font-semibold cursor-pointer"
             >
               <Home className="w-3.5 h-3.5" />
               <span>Home</span>
             </button>
-            <span>/</span>
-            <span className="text-[#fed65b] font-bold capitalize">{activePage} Page</span>
+            <span className="text-white/30">/</span>
+            <span className="text-[#FED65B] font-semibold capitalize">{activePage}</span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onBackToHome}
-              className="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold font-manrope flex items-center gap-1.5 transition-all cursor-pointer"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Home Overview</span>
-            </button>
-          </div>
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            onClick={onBackToHome}
+            className="px-3 py-1.5 rounded-full bg-white/[0.08] hover:bg-white/[0.12] text-white/90 text-xs font-semibold font-manrope flex items-center gap-1.5 transition-colors cursor-pointer border border-white/[0.08]"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Return to Home</span>
+          </motion.button>
         </div>
 
-        {/* Title & Badge */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-2">
+        {/* Title & Page Switcher */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-1">
           <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fed65b] text-[#745c00] text-xs font-extrabold font-manrope">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>{badge}</span>
+            <div className="text-xs font-semibold tracking-tight text-[#FED65B]">
+              {badge} · Rongai & Ngong
             </div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold font-manrope tracking-tight text-white flex items-center gap-3">
-              <span className="p-2.5 rounded-2xl bg-white/10 text-[#fed65b] inline-flex items-center justify-center">
-                <Icon className="w-7 h-7 sm:w-8 sm:h-8" />
+            <h1 className="text-xl sm:text-3xl lg:text-4xl font-extrabold font-manrope tracking-[-0.02em] text-white flex items-center gap-2.5 sm:gap-3 break-words">
+              <span className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/[0.08] text-[#FED65B] inline-flex items-center justify-center shrink-0 border border-white/[0.1]">
+                <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
               </span>
               <span>{title}</span>
             </h1>
-            <p className="text-sm sm:text-base text-white/80 font-worksans leading-relaxed">
+            <p className="text-xs sm:text-sm text-white/70 font-worksans leading-relaxed max-w-xl">
               {subtitle}
             </p>
           </div>
 
-          {/* Quick Page Navigator Tabs on Banner */}
-          <div className="bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/15 space-y-2 shrink-0">
-            <span className="text-[10px] uppercase font-bold text-[#fed65b] tracking-wider block font-manrope">
-              Quick Switch Page
-            </span>
-            <div className="flex flex-wrap gap-1.5 text-xs font-manrope font-bold">
-              {[
-                { id: 'services', label: 'Services' },
-                { id: 'calculator', label: 'Estimator' },
-                { id: 'track', label: 'Order Tracker' },
-                { id: 'memberships', label: 'VIP Pass' },
-                { id: 'branches', label: 'Branches' },
-              ].map((tab) => (
+          {/* Quick Page Switcher with sliding spring indicator */}
+          <div className="p-1 rounded-2xl sm:rounded-full bg-white/[0.05] border border-white/[0.08] flex overflow-x-auto no-scrollbar max-w-full sm:flex-wrap gap-1 text-xs font-manrope shrink-0">
+            {[
+              { id: 'services', label: 'Services' },
+              { id: 'calculator', label: 'Estimator' },
+              { id: 'track', label: 'Track' },
+              { id: 'memberships', label: 'VIP Pass' },
+              { id: 'branches', label: 'Branches' },
+            ].map((tab) => {
+              const isActive = activePage === tab.id;
+              return (
                 <button
                   key={tab.id}
                   onClick={() => onSelectPage(tab.id as PageType)}
-                  className={`px-3 py-1 rounded-xl transition-all cursor-pointer ${
-                    activePage === tab.id
-                      ? 'bg-[#fed65b] text-[#341168]'
-                      : 'bg-white/10 text-white hover:bg-white/20'
+                  className={`relative px-3 py-1.5 rounded-full font-semibold transition-colors cursor-pointer whitespace-nowrap shrink-0 z-10 ${
+                    isActive ? 'text-[#0c0418] font-bold' : 'text-white/70 hover:text-white'
                   }`}
                 >
-                  {tab.label}
+                  {isActive && (
+                    <motion.div
+                      layoutId="headerPagePill"
+                      transition={{ type: "spring", stiffness: 440, damping: 32 }}
+                      className="absolute inset-0 rounded-full bg-[#FED65B] shadow-2xs -z-10"
+                    />
+                  )}
+                  <span>{tab.label}</span>
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
         </div>
       </div>

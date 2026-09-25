@@ -9,78 +9,78 @@ export const INITIAL_SERVICES: ServiceItem[] = [
     name: 'Clothes Wash (1-7kg)',
     category: 'laundry',
     price: 450,
-    priceUnit: '1-7kg',
+    priceUnit: 'load',
     turnaround: '24 Hours',
     description: 'Everyday laundry wash using eco-friendly detergents and sanitizing wash cycle.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBFRFvYBreEBVNW93diXbcrk2NZPss9pV_YIAkMUFi7Mu-wkCk2O2F1GWtCv_OAsIA1DNRIf78DldrF30GDOdwCTLxSLb49Po0jAkFk0ArhMQNdrGr-46RJcwkLIW0RwCpTRaw8vral4Lcl2u8_z-dGukWBNDjTJuaLeTsTQegOnK5lsQZCpZxZNT5H62oOTZW3H9tz9FQkrhxfVybycl99PEv7Sq9rnyQhakwCF7TZSWbvGWGAd-DY6ag0N6J9XtCHYHLnxCbSsIk',
+    image: '/src/assets/images/hero_laundry_pristine_1790275438376.jpg',
     popular: true,
-    features: ['1-7kg capacity', 'Eco-friendly detergent', 'Separated lights & darks', 'Deep stain removal']
+    features: ['Standard load capacity', 'Eco-friendly detergent', 'Separated lights & darks', 'Deep stain removal']
   },
   {
     id: 's-13',
     name: 'Clothes Dry (1-7kg)',
     category: 'laundry',
     price: 450,
-    priceUnit: '1-7kg',
+    priceUnit: 'load',
     turnaround: '24 Hours',
     description: 'Professional thermal tumble drying for pre-washed laundry loads.',
     popular: false,
-    features: ['1-7kg capacity', 'Gentle moisture control', 'Lint removal', 'Clean finish']
+    features: ['Standard load capacity', 'Gentle moisture control', 'Lint removal', 'Clean finish']
   },
   {
     id: 's-14',
     name: 'Clothes Iron (1-7kg)',
     category: 'laundry',
     price: 450,
-    priceUnit: '1-7kg',
+    priceUnit: 'load',
     turnaround: '24 Hours',
     description: 'Professional steam pressing for washed and dried clothing.',
     popular: false,
-    features: ['1-7kg capacity', 'Crisp steam pressing', 'Crease removal', 'Hanger / folded option']
+    features: ['Standard load capacity', 'Crisp steam pressing', 'Crease removal', 'Hanger / folded option']
   },
   {
     id: 's-2',
     name: 'Super package (1-7kg)',
     category: 'laundry',
     price: 1300,
-    priceUnit: '1-7kg',
+    priceUnit: 'load',
     turnaround: '24 Hours',
-    description: 'Complete super package including wash, dry, ironing, and folding for 1-7kg.',
+    description: 'All-inclusive bundle covering wash, dry, steam ironing, and folding.',
     popular: true,
-    features: ['1-7kg capacity', 'Full wash, dry, iron & fold', 'Crisp steam pressing', 'Hanger or folded packing']
+    features: ['Standard load capacity', 'Full wash, dry, iron & fold', 'Crisp steam pressing', 'Hanger or folded packing']
   },
   {
     id: 's-15',
     name: 'Clothes Wash (12kg)',
     category: 'laundry',
     price: 750,
-    priceUnit: '12kg load',
+    priceUnit: 'load',
     turnaround: '24 Hours',
-    description: 'Heavy family load wash for up to 12kg of laundry.',
+    description: 'Heavy family load wash for large laundry baskets.',
     popular: false,
-    features: ['12kg heavy load capacity', 'Deep stain removal', 'Softener rinse', 'High-efficiency wash']
+    features: ['Family heavy load capacity', 'Deep stain removal', 'Softener rinse', 'High-efficiency wash']
   },
   {
     id: 's-16',
     name: 'Clothes Dry (12kg)',
     category: 'laundry',
     price: 750,
-    priceUnit: '12kg load',
+    priceUnit: 'load',
     turnaround: '24 Hours',
-    description: 'High capacity thermal drying for up to 12kg loads.',
+    description: 'High capacity thermal drying for large laundry loads.',
     popular: false,
-    features: ['12kg load', 'Thermal sanitizing', 'Wrinkle reduction']
+    features: ['Family heavy load capacity', 'Thermal sanitizing', 'Wrinkle reduction']
   },
   {
     id: 's-17',
     name: 'Clothes Iron (12kg)',
     category: 'laundry',
     price: 750,
-    priceUnit: '12kg load',
+    priceUnit: 'load',
     turnaround: '24 Hours',
-    description: 'Steam pressing service for large 12kg laundry loads.',
+    description: 'Steam pressing service for large laundry loads.',
     popular: false,
-    features: ['12kg load', 'Crisp steam finish', 'Fabric protection']
+    features: ['Family heavy load capacity', 'Crisp steam finish', 'Fabric protection']
   },
   {
     id: 's-11',
@@ -98,22 +98,22 @@ export const INITIAL_SERVICES: ServiceItem[] = [
     name: 'Towels Wash (1-7kg)',
     category: 'laundry',
     price: 600,
-    priceUnit: '1-7kg',
+    priceUnit: 'load',
     turnaround: '24 Hours',
     description: 'Sanitizing wash for bath towels and household linens.',
     popular: false,
-    features: ['1-7kg capacity', 'Fluffing softener rinse', 'High-temp sanitization']
+    features: ['Standard load capacity', 'Fluffing softener rinse', 'High-temp sanitization']
   },
   {
     id: 's-19',
     name: 'Towels Dry (1-7kg)',
     category: 'laundry',
     price: 600,
-    priceUnit: '1-7kg',
+    priceUnit: 'load',
     turnaround: '24 Hours',
     description: 'Thermal tumble dry for plush bath towels.',
     popular: false,
-    features: ['1-7kg capacity', 'Soft plush fluffing', 'Odour elimination']
+    features: ['Standard load capacity', 'Soft plush fluffing', 'Odour elimination']
   },
 
   // Dry Cleaning
@@ -125,6 +125,7 @@ export const INITIAL_SERVICES: ServiceItem[] = [
     priceUnit: 'per suit',
     turnaround: '24-48 Hours',
     description: 'Chemical-free, fiber-safe solvent cleaning for 2-piece suits, blazers, and formal evening wear.',
+    image: '/src/assets/images/service_dry_cleaning_1790275450278.jpg',
     popular: true,
     features: ['Hand-finished lapels', 'Breathable garment bag', 'Form retention care', 'Stain pre-treatment']
   },
@@ -358,7 +359,8 @@ export const INITIAL_SERVICES: ServiceItem[] = [
     priceUnit: 'per duvet',
     turnaround: '24 Hours',
     description: 'High-volume machine wash and thermo-sanitizing dry for single/double fiberfill and feather duvets.',
-    popular: false,
+    image: '/src/assets/images/service_duvet_clinic_1790275460988.jpg',
+    popular: true,
     features: ['Thermo-sanitization', 'Anti-dustmite rinse', 'Deep stain removal', 'Protective carry sleeve']
   },
   {
@@ -401,7 +403,7 @@ export const INITIAL_SERVICES: ServiceItem[] = [
     name: 'Mattress Cover (3kg)',
     category: 'carpet-cleaning',
     price: 500,
-    priceUnit: 'per 3kg load',
+    priceUnit: 'load',
     turnaround: '48 Hours',
     description: 'Deep extraction steam cleaning for household mattress covers, living room runners, and woolen rugs.',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCQhs8fYKq1Mx-BHvcne2U2apFbcqEyIqCQsi4pw6652nOdFNWkNq0XQYfYPMjaRps25mxRVpwInN7aSf0YylSnnen8YHUVoI6h2kumBeDMiVrTXs9Ohi7gVXRIwpPAPNsRT8kOzjC4ddrrsvXlOp5Lp9Ur-mGHa-ztof3hW8SBZ91E-BwU0R4YfAMWyzBuko3oOisdK5v-Cs4w1VJGc58pdky4XlsrB3NW-44aKaMjprEvrBxHdhWoIKK4rFSCXdqM1m_DNSnigMc',
@@ -413,7 +415,7 @@ export const INITIAL_SERVICES: ServiceItem[] = [
     name: 'Curtains Dry (3kg)',
     category: 'carpet-cleaning',
     price: 500,
-    priceUnit: 'per 3kg load',
+    priceUnit: 'load',
     turnaround: '48 Hours',
     description: 'Specialized moisture extraction and dry cleaning for blackout curtains and velvet drapes.',
     popular: false,
@@ -424,7 +426,7 @@ export const INITIAL_SERVICES: ServiceItem[] = [
     name: 'Curtains Iron (3kg)',
     category: 'carpet-cleaning',
     price: 500,
-    priceUnit: 'per 3kg load',
+    priceUnit: 'load',
     turnaround: '48 Hours',
     description: 'Steam pressing and pleat setting for household drapes and curtains.',
     popular: false,
@@ -480,7 +482,7 @@ export const SAMPLE_ORDERS: Order[] = [
     branch: 'Rongai Branch',
     address: 'Hill Valley Place, Magadi Road, Rongai',
     items: [
-      { serviceName: 'Super Package (Wash, Dry, Iron & Fold 1-7kg)', quantity: 1, unitPrice: 1300 },
+      { serviceName: 'Super Package (Wash, Dry, Iron & Fold)', quantity: 1, unitPrice: 1300 },
       { serviceName: 'King & Queen Heavy Duvet Clinic (2-pc)', quantity: 1, unitPrice: 1400 }
     ],
     totalPrice: 2700,
@@ -504,7 +506,7 @@ export const SAMPLE_ORDERS: Order[] = [
     branch: 'Rongai Branch',
     address: 'Hill Valley Estate, Magadi Rd, Rongai',
     items: [
-      { serviceName: 'Wash & Fold Laundry (1-7kg)', quantity: 1, unitPrice: 450 },
+      { serviceName: 'Wash & Fold Laundry', quantity: 1, unitPrice: 450 },
       { serviceName: 'King & Queen Heavy Duvet Clinic (2-pc)', quantity: 1, unitPrice: 1400 }
     ],
     totalPrice: 1850,
@@ -553,7 +555,7 @@ export const SAMPLE_ORDERS: Order[] = [
     branch: 'Rongai Branch',
     address: 'Rimpa, Rongai',
     items: [
-      { serviceName: 'Mattress Cover / Rug Deep Cleaning (3kg)', quantity: 2, unitPrice: 500 }
+      { serviceName: 'Mattress Cover / Rug Deep Cleaning', quantity: 2, unitPrice: 500 }
     ],
     totalPrice: 1000,
     status: 'Quality Check',

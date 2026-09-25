@@ -34,18 +34,18 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto animate-fade-in">
-      <div className="w-full max-w-xl mx-auto space-y-4 my-8">
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in">
+      <div className="w-full max-w-xl mx-auto space-y-4 my-auto max-h-[calc(100dvh-2rem)] overflow-y-auto">
         {/* Method Toggle Header */}
-        <div className="bg-white p-3.5 rounded-2xl border border-[#e5e2e1] shadow-md flex items-center justify-between gap-3">
+        <div className="bg-white p-3 sm:p-3.5 rounded-2xl border border-[#e5e2e1] shadow-md flex flex-wrap items-center justify-between gap-2.5">
           <div className="text-xs font-extrabold font-manrope text-[#341168] uppercase tracking-wider">
             Payment Option
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-1 sm:flex-initial gap-2 min-w-[240px]">
             <button
               type="button"
               onClick={() => setPaymentMethod('mpesa')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold font-manrope transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`flex-1 sm:flex-initial px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold font-manrope transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 paymentMethod === 'mpesa'
                   ? 'bg-[#341168] text-white shadow-sm'
                   : 'bg-[#f6f3f2] text-[#4a4550] hover:bg-[#e5e2e1]'
@@ -57,7 +57,7 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
             <button
               type="button"
               onClick={() => setPaymentMethod('cod')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold font-manrope transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`flex-1 sm:flex-initial px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold font-manrope transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 paymentMethod === 'cod'
                   ? 'bg-[#341168] text-white shadow-sm'
                   : 'bg-[#f6f3f2] text-[#4a4550] hover:bg-[#e5e2e1]'
@@ -69,7 +69,7 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-[#7b7581] hover:text-[#1c1b1b] rounded-full hover:bg-[#f6f3f2] transition-colors cursor-pointer"
+            className="p-1.5 text-[#7b7581] hover:text-[#1c1b1b] rounded-full hover:bg-[#f6f3f2] transition-colors cursor-pointer ml-auto sm:ml-0"
           >
             <X className="w-5 h-5" />
           </button>

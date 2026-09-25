@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Calculator, Plus, Minus, Check, ArrowRight, Truck, Sparkles, RefreshCw, Table, ShieldCheck, Tag } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Calculator, Plus, Minus, ArrowRight, Truck, Sparkles, RefreshCw, Table, ShieldCheck, Check } from 'lucide-react';
 import { INITIAL_SERVICES } from '../data/initialData';
 
 interface PriceCalculatorProps {
@@ -9,7 +10,7 @@ interface PriceCalculatorProps {
 export const PriceCalculator: React.FC<PriceCalculatorProps> = ({
   onProceedToBookingWithItems
 }) => {
-  const [activeView, setActiveView] = useState<'calculator' | 'pricelist'>('pricelist');
+  const [activeView, setActiveView] = useState<'calculator' | 'pricelist'>('calculator');
 
   // Quantities for each item id
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({
@@ -59,14 +60,12 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({
   if (stainTreatment) addOnsTotal += 200;
   if (hangers) addOnsTotal += 150;
 
-  // Delivery fee logic (Free pickup for orders within 1km)
-  const deliveryFee = 0;
-
+  const deliveryFee = 0; // Free within 1km
   const finalTotal = itemsSubtotal + addOnsTotal + deliveryFee;
 
   const handleBookQuote = () => {
     const formattedItems = selectedItems.map(item => ({
-      serviceName: `${item.service.name} (${item.service.priceUnit})`,
+      serviceName: item.service.name,
       quantity: item.quantity,
       unitPrice: item.service.price
     }));
@@ -102,7 +101,7 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({
     { name: 'Plain Skirt', unit: '1', price: 150 },
     { name: 'Pleated Skirt', unit: '1', price: 350 },
     { name: 'Sleeping Bag', unit: '1', price: 500 },
-    { name: 'Mattress Cover', unit: '3kg', price: 500 },
+    { name: 'Mattress Cover', unit: '1', price: 500 },
     { name: 'Executive Shirt', unit: '1', price: 150 },
     { name: 'Coat / Blazer', unit: '1', price: 250 },
     { name: 'Dress Pleated', unit: '1', price: 450 },
@@ -114,115 +113,172 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({
     { name: 'Cashmere with Leather Trim', unit: '1', price: 650 },
   ];
 
-  const normalLaundryList = [
-    { name: 'Clothes Wash', unit: '1-7kg', price: 450 },
-    { name: 'Clothes Dry', unit: '1-7kg', price: 450 },
-    { name: 'Clothes Iron', unit: '1-7kg', price: 450 },
-    { name: 'Clothes Wash', unit: '12kg', price: 750 },
-    { name: 'Clothes Dry', unit: '12kg', price: 750 },
-    { name: 'Clothes Iron', unit: '12kg', price: 750 },
-    { name: 'Curtains Dry', unit: '3kg', price: 500 },
-    { name: 'Curtains Iron', unit: '3kg', price: 500 },
-    { name: 'Duvet Cleaning', unit: '1 piece', price: 850 },
-    { name: 'Duvet Cleaning', unit: '2 piece', price: 1400 },
-    { name: 'Pillow Wash', unit: '1 pair', price: 450 },
-    { name: 'Pillow Dry', unit: '1 pair', price: 450 },
-    { name: 'Towels Wash', unit: '1-7kg', price: 600 },
-    { name: 'Towels Dry', unit: '1-7kg', price: 600 },
+  const normalLaundryTiers = [
+    {
+      tier: 'Standard Load (1-7kg)',
+      items: [
+        { name: 'Clothes Wash', unit: 'per load', price: 450 },
+        { name: 'Clothes Dry', unit: 'per load', price: 450 },
+        { name: 'Clothes Iron', unit: 'per load', price: 450 },
+        { name: 'Towels Wash', unit: 'per load', price: 600 },
+        { name: 'Towels Dry', unit: 'per load', price: 600 },
+      ]
+    },
+    {
+      tier: 'Heavy Family Load (12kg)',
+      items: [
+        { name: 'Clothes Wash', unit: 'per load', price: 750 },
+        { name: 'Clothes Dry', unit: 'per load', price: 750 },
+        { name: 'Clothes Iron', unit: 'per load', price: 750 },
+      ]
+    },
+    {
+      tier: 'Drapery & Linens (3kg)',
+      items: [
+        { name: 'Curtains Dry', unit: 'per load', price: 500 },
+        { name: 'Curtains Iron', unit: 'per load', price: 500 },
+      ]
+    },
+    {
+      tier: 'Bedding & Pillows',
+      items: [
+        { name: 'Duvet Cleaning (Single)', unit: '1 piece', price: 850 },
+        { name: 'Duvet Cleaning (King/Queen 2-pc)', unit: '1 set', price: 1400 },
+        { name: 'Pillow Wash', unit: '1 pair', price: 450 },
+        { name: 'Pillow Dry', unit: '1 pair', price: 450 },
+      ]
+    }
   ];
 
   return (
-    <section id="calculator" className="py-16 sm:py-24 bg-[#fcf9f8] dark:bg-[#0f0717] relative transition-colors duration-200">
+    <section id="calculator" className="py-20 sm:py-28 bg-[#FAFAFB] dark:bg-[#0c0418] relative transition-colors duration-200 border-t border-black/[0.06] dark:border-white/[0.06]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Header & View Switcher */}
-        <div className="text-center max-w-2xl mx-auto space-y-4 mb-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#fed65b]/30 dark:bg-[#FED65B]/10 text-[#745c00] dark:text-[#FED65B] font-bold text-xs uppercase font-manrope">
-            <Calculator className="w-3.5 h-3.5 text-[#341168] dark:text-[#FED65B]" />
-            <span>Transparent Pricing</span>
+        <div className="text-center max-w-xl mx-auto space-y-3 mb-12">
+          <div className="text-xs font-semibold tracking-tight text-[#5E228B] dark:text-[#FED65B]">
+            Transparent Pricing · Real-Time Calculation
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold font-manrope text-[#341168] dark:text-white">
-            Laundromat Pricing & Estimator
+          <h2 className="text-3xl sm:text-4xl font-extrabold font-manrope text-neutral-900 dark:text-white tracking-[-0.02em] [text-wrap:balance]">
+            Interactive Price Estimator
           </h2>
-          <p className="text-sm font-worksans text-[#4a4550] dark:text-gray-300">
-            Premium care for your garments with transparent, fixed pricing. Choose between our interactive quote calculator or complete rate list.
+          <p className="text-sm font-worksans text-neutral-600 dark:text-neutral-300 leading-relaxed">
+            Select items to get an instantaneous quote, or inspect our verified fixed price list below.
           </p>
 
-          {/* View Toggle */}
-          <div className="inline-flex p-1.5 bg-white dark:bg-[#1a0c2a] rounded-full border border-[#e5e2e1] dark:border-white/10 shadow-xs">
+          {/* Emil Kowalski Style Segmented View Switcher */}
+          <div className="flex justify-center p-1 rounded-full bg-black/[0.04] dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.08] w-fit mx-auto mt-4">
             <button
               onClick={() => setActiveView('calculator')}
-              className={`px-5 py-2 rounded-full text-xs font-bold font-manrope transition-all cursor-pointer flex items-center gap-2 ${
+              className={`relative px-4 py-2 rounded-full text-xs font-semibold font-manrope transition-colors cursor-pointer flex items-center gap-2 z-10 ${
                 activeView === 'calculator' 
-                  ? 'bg-[#341168] dark:bg-[#FED65B] text-white dark:text-[#2F2F2F] shadow-sm font-black' 
-                  : 'text-[#4a4550] dark:text-gray-300 hover:text-[#341168] dark:hover:text-white'
+                  ? 'text-white dark:text-[#0c0418]' 
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white'
               }`}
             >
+              {activeView === 'calculator' && (
+                <motion.div
+                  layoutId="calcViewPill"
+                  transition={{ type: "spring", stiffness: 440, damping: 32 }}
+                  className="absolute inset-0 rounded-full bg-[#5E228B] dark:bg-[#FED65B] shadow-[0_2px_8px_rgba(94,34,139,0.25)] -z-10"
+                />
+              )}
               <Calculator className="w-3.5 h-3.5" />
-              <span>Interactive Calculator</span>
+              <span>Custom Quote</span>
             </button>
+
             <button
               onClick={() => setActiveView('pricelist')}
-              className={`px-5 py-2 rounded-full text-xs font-bold font-manrope transition-all cursor-pointer flex items-center gap-2 ${
+              className={`relative px-4 py-2 rounded-full text-xs font-semibold font-manrope transition-colors cursor-pointer flex items-center gap-2 z-10 ${
                 activeView === 'pricelist' 
-                  ? 'bg-[#341168] dark:bg-[#FED65B] text-white dark:text-[#2F2F2F] shadow-sm font-black' 
-                  : 'text-[#4a4550] dark:text-gray-300 hover:text-[#341168] dark:hover:text-white'
+                  ? 'text-white dark:text-[#0c0418]' 
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white'
               }`}
             >
+              {activeView === 'pricelist' && (
+                <motion.div
+                  layoutId="calcViewPill"
+                  transition={{ type: "spring", stiffness: 440, damping: 32 }}
+                  className="absolute inset-0 rounded-full bg-[#5E228B] dark:bg-[#FED65B] shadow-[0_2px_8px_rgba(94,34,139,0.25)] -z-10"
+                />
+              )}
               <Table className="w-3.5 h-3.5" />
-              <span>Official Price List Tables</span>
+              <span>Complete Rate Sheet</span>
             </button>
           </div>
         </div>
 
         {/* View 1: Calculator */}
         {activeView === 'calculator' && (
-          <div className="grid lg:grid-cols-12 gap-8 items-start animate-fade-in">
+          <div className="grid lg:grid-cols-12 gap-8 items-start">
             {/* Items Selector (Left 7 cols) */}
-            <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-[#e5e2e1] shadow-sm space-y-6">
-              <div className="flex justify-between items-center border-b border-[#e5e2e1] pb-4">
-                <h3 className="font-bold font-manrope text-lg text-[#341168]">Select Garments & Services</h3>
-                <button 
+            <div className="lg:col-span-7 bg-white dark:bg-[#130722] rounded-2xl p-6 sm:p-8 border border-black/[0.08] dark:border-white/[0.1] shadow-xs space-y-6">
+              <div className="flex justify-between items-center border-b border-black/[0.06] dark:border-white/[0.08] pb-4">
+                <div>
+                  <h3 className="font-bold font-manrope text-base sm:text-lg text-neutral-900 dark:text-white tracking-tight">
+                    Garments & Household Items
+                  </h3>
+                  <p className="text-xs text-neutral-500 font-worksans">Adjust counts to compute immediate quote</p>
+                </div>
+                <motion.button 
+                  whileTap={{ scale: 0.95 }}
                   onClick={handleReset}
-                  className="text-xs font-bold text-[#7b7581] hover:text-[#341168] flex items-center gap-1 cursor-pointer"
+                  className="text-xs font-semibold text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white flex items-center gap-1.5 cursor-pointer px-2.5 py-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-white/[0.05] transition-colors"
                 >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Reset All</span>
-                </button>
+                  <RefreshCw className="w-3 h-3" />
+                  <span>Reset</span>
+                </motion.button>
               </div>
 
-              <div className="space-y-4">
-                {INITIAL_SERVICES.map((s) => {
+              {/* Garment Counter Cards */}
+              <div className="space-y-2.5">
+                {INITIAL_SERVICES.slice(0, 7).map((s) => {
                   const qty = quantities[s.id] || 0;
 
                   return (
-                    <div key={s.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-2xl bg-[#f6f3f2] hover:bg-[#f0eded] transition-colors gap-3">
-                      <div className="flex-1">
-                        <div className="font-bold font-manrope text-sm text-[#1c1b1b]">{s.name}</div>
-                        <div className="text-xs text-[#735c00] font-bold font-worksans">
-                          Ksh {s.price.toLocaleString()} <span className="text-[#7b7581] font-normal">/ {s.priceUnit}</span>
+                    <div 
+                      key={s.id} 
+                      className={`flex items-center justify-between p-3.5 rounded-xl border transition-colors ${
+                        qty > 0 
+                          ? 'bg-neutral-50/80 dark:bg-white/[0.05] border-[#5E228B]/30 dark:border-[#FED65B]/30' 
+                          : 'bg-white dark:bg-transparent border-black/[0.06] dark:border-white/[0.06]'
+                      }`}
+                    >
+                      <div className="flex-1 pr-3">
+                        <div className="font-bold font-manrope text-xs sm:text-sm text-neutral-900 dark:text-white tracking-tight">
+                          {s.name}
+                        </div>
+                        <div className="text-xs text-[#5E228B] dark:text-[#FED65B] font-semibold tabular-nums">
+                          Ksh {s.price.toLocaleString()} <span className="text-neutral-400 font-normal">/ {s.priceUnit}</span>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <div className="flex items-center border border-[#e5e2e1] bg-white rounded-full p-1">
-                          <button
+                        {/* Tactile Counter Buttons with spring micro-interactions */}
+                        <div className="flex items-center border border-black/[0.08] dark:border-white/[0.1] bg-white dark:bg-[#180a2c] rounded-lg p-0.5 shadow-2xs">
+                          <motion.button
+                            whileTap={{ scale: 0.85 }}
                             onClick={() => updateQuantity(s.id, -1)}
-                            className="w-7 h-7 rounded-full bg-[#f6f3f2] hover:bg-[#e5e2e1] flex items-center justify-center text-[#1c1b1b] transition-colors cursor-pointer"
+                            className="w-7 h-7 rounded-md hover:bg-neutral-100 dark:hover:bg-white/[0.08] flex items-center justify-center text-neutral-700 dark:text-neutral-200 transition-colors cursor-pointer"
+                            aria-label={`Decrease ${s.name}`}
                           >
-                            <Minus className="w-3.5 h-3.5" />
-                          </button>
-                          <span className="w-10 text-center font-bold font-manrope text-sm text-[#341168]">
+                            <Minus className="w-3 h-3" />
+                          </motion.button>
+
+                          <span className="w-8 text-center font-bold font-manrope text-xs sm:text-sm text-neutral-900 dark:text-white tabular-nums">
                             {qty}
                           </span>
-                          <button
+
+                          <motion.button
+                            whileTap={{ scale: 0.85 }}
                             onClick={() => updateQuantity(s.id, 1)}
-                            className="w-7 h-7 rounded-full bg-[#341168] text-white hover:bg-[#4b2c7f] flex items-center justify-center transition-colors cursor-pointer"
+                            className="w-7 h-7 rounded-md bg-[#5E228B] dark:bg-[#FED65B] text-white dark:text-[#0c0418] hover:brightness-110 flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
+                            aria-label={`Increase ${s.name}`}
                           >
-                            <Plus className="w-3.5 h-3.5" />
-                          </button>
+                            <Plus className="w-3 h-3" />
+                          </motion.button>
                         </div>
 
-                        <div className="w-20 text-right font-bold font-manrope text-sm text-[#341168]">
+                        <div className="w-16 text-right font-bold font-manrope text-xs sm:text-sm text-neutral-900 dark:text-white tabular-nums">
                           Ksh {(qty * s.price).toLocaleString()}
                         </div>
                       </div>
@@ -231,325 +287,206 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({
                 })}
               </div>
 
-              {/* Custom Care Add-ons */}
-              <div className="pt-4 border-t border-[#e5e2e1]">
-                <h4 className="font-bold font-manrope text-sm text-[#341168] mb-3">Custom Treatment Add-ons</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <label className={`p-3 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                    expressDelivery ? 'bg-[#fed65b]/20 border-[#fed65b] text-[#341168]' : 'bg-white border-[#e5e2e1] text-[#4a4550]'
-                  }`}>
-                    <div className="flex items-center gap-2.5">
-                      <input 
-                        type="checkbox" 
-                        checked={expressDelivery} 
-                        onChange={(e) => setExpressDelivery(e.target.checked)}
-                        className="rounded text-[#341168] focus:ring-[#341168]"
-                      />
-                      <span className="text-xs font-bold font-manrope">Same-Day Express (+Ksh 300)</span>
-                    </div>
-                  </label>
-
-                  <label className={`p-3 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                    extraSoftener ? 'bg-[#fed65b]/20 border-[#fed65b] text-[#341168]' : 'bg-white border-[#e5e2e1] text-[#4a4550]'
-                  }`}>
-                    <div className="flex items-center gap-2.5">
-                      <input 
-                        type="checkbox" 
-                        checked={extraSoftener} 
-                        onChange={(e) => setExtraSoftener(e.target.checked)}
-                        className="rounded text-[#341168] focus:ring-[#341168]"
-                      />
-                      <span className="text-xs font-bold font-manrope">Lavender Scent Rinse (+Ksh 100)</span>
-                    </div>
-                  </label>
-
-                  <label className={`p-3 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                    stainTreatment ? 'bg-[#fed65b]/20 border-[#fed65b] text-[#341168]' : 'bg-white border-[#e5e2e1] text-[#4a4550]'
-                  }`}>
-                    <div className="flex items-center gap-2.5">
-                      <input 
-                        type="checkbox" 
-                        checked={stainTreatment} 
-                        onChange={(e) => setStainTreatment(e.target.checked)}
-                        className="rounded text-[#341168] focus:ring-[#341168]"
-                      />
-                      <span className="text-xs font-bold font-manrope">Stain Pre-Treatment (+Ksh 200)</span>
-                    </div>
-                  </label>
-
-                  <label className={`p-3 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                    hangers ? 'bg-[#fed65b]/20 border-[#fed65b] text-[#341168]' : 'bg-white border-[#e5e2e1] text-[#4a4550]'
-                  }`}>
-                    <div className="flex items-center gap-2.5">
-                      <input 
-                        type="checkbox" 
-                        checked={hangers} 
-                        onChange={(e) => setHangers(e.target.checked)}
-                        className="rounded text-[#341168] focus:ring-[#341168]"
-                      />
-                      <span className="text-xs font-bold font-manrope">Hanger Packaging (+Ksh 150)</span>
-                    </div>
-                  </label>
+              {/* Custom Care Add-ons with spring checkboxes */}
+              <div className="pt-4 border-t border-black/[0.06] dark:border-white/[0.08]">
+                <h4 className="font-bold font-manrope text-xs sm:text-sm text-neutral-900 dark:text-white mb-3">
+                  Optional Care Treatments
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {[
+                    { label: 'Same-Day Express (+Ksh 300)', state: expressDelivery, setter: setExpressDelivery },
+                    { label: 'Lavender Softener (+Ksh 100)', state: extraSoftener, setter: setExtraSoftener },
+                    { label: 'Stain Pre-treatment (+Ksh 200)', state: stainTreatment, setter: setStainTreatment },
+                    { label: 'Garment Hanger Packing (+Ksh 150)', state: hangers, setter: setHangers },
+                  ].map((opt, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => opt.setter(!opt.state)}
+                      className={`p-3 rounded-xl border text-left flex items-center justify-between cursor-pointer transition-colors ${
+                        opt.state 
+                          ? 'bg-[#5E228B]/[0.06] dark:bg-white/[0.08] border-[#5E228B]/40 dark:border-[#FED65B]/40 text-neutral-900 dark:text-white' 
+                          : 'bg-white dark:bg-transparent border-black/[0.06] dark:border-white/[0.08] text-neutral-600 dark:text-neutral-400'
+                      }`}
+                    >
+                      <span className="text-xs font-semibold font-manrope">{opt.label}</span>
+                      <div className={`w-4 h-4 rounded flex items-center justify-center border transition-colors ${
+                        opt.state ? 'bg-[#5E228B] dark:bg-[#FED65B] border-transparent text-white dark:text-black' : 'border-neutral-300 dark:border-neutral-600'
+                      }`}>
+                        {opt.state && <Check className="w-3 h-3 stroke-[3]" />}
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
 
             {/* Quote Summary Sidebar (Right 5 cols) */}
-            <div className="lg:col-span-5 bg-[#341168] text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-[#4b2c7f] sticky top-24 space-y-6">
-              <div className="flex items-center justify-between border-b border-white/20 pb-4">
-                <h3 className="font-bold font-manrope text-lg text-[#fed65b] flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-[#fed65b]" />
-                  Estimate Breakdown
-                </h3>
-                <span className="text-xs font-bold bg-[#fed65b] text-[#745c00] px-2.5 py-1 rounded-full uppercase">
+            <div className="lg:col-span-5 bg-[#140824] text-white rounded-2xl p-6 sm:p-7 shadow-xl border border-white/[0.1] sticky top-24 space-y-6">
+              <div className="flex items-center justify-between border-b border-white/[0.1] pb-4">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-[#FED65B]" />
+                  <h3 className="font-bold font-manrope text-sm sm:text-base text-white tracking-tight">
+                    Order Estimate
+                  </h3>
+                </div>
+                <span className="text-[11px] font-semibold text-white/60">
                   Rongai & Ngong
                 </span>
               </div>
 
               {/* Selected Items List */}
-              <div className="space-y-3 text-xs font-worksans max-h-56 overflow-y-auto pr-1">
+              <div className="space-y-2 text-xs font-worksans max-h-52 overflow-y-auto pr-1">
                 {selectedItems.length === 0 ? (
-                  <p className="text-white/60 italic text-center py-6">
-                    No garments selected yet. Adjust the counters on the left!
+                  <p className="text-white/40 italic text-center py-6">
+                    No garments added. Use the controls on the left.
                   </p>
                 ) : (
                   selectedItems.map((item, i) => (
-                    <div key={i} className="flex justify-between items-center py-1 border-b border-white/10">
-                      <div>
-                        <span className="font-bold text-white">{item.service.name}</span>
-                        <span className="text-white/60 ml-2">x{item.quantity}</span>
+                    <div key={i} className="flex justify-between items-center py-1.5 border-b border-white/[0.06]">
+                      <div className="truncate pr-2">
+                        <span className="font-semibold text-white truncate">{item.service.name}</span>
+                        <span className="text-white/50 ml-1.5 tabular-nums">×{item.quantity}</span>
                       </div>
-                      <span className="font-bold text-[#fed65b]">Ksh {item.total.toLocaleString()}</span>
+                      <span className="font-bold text-[#FED65B] tabular-nums shrink-0">
+                        Ksh {item.total.toLocaleString()}
+                      </span>
                     </div>
                   ))
                 )}
               </div>
 
               {/* Calculations Breakdown */}
-              <div className="space-y-2 text-xs pt-3 border-t border-white/20 font-worksans">
-                <div className="flex justify-between text-white/80">
+              <div className="space-y-2 text-xs pt-3 border-t border-white/[0.08] font-worksans">
+                <div className="flex justify-between text-white/70">
                   <span>Items Subtotal</span>
-                  <span>Ksh {itemsSubtotal.toLocaleString()}</span>
+                  <span className="tabular-nums font-semibold text-white">Ksh {itemsSubtotal.toLocaleString()}</span>
                 </div>
                 {addOnsTotal > 0 && (
-                  <div className="flex justify-between text-white/80">
-                    <span>Custom Care Add-ons</span>
-                    <span>Ksh {addOnsTotal.toLocaleString()}</span>
+                  <div className="flex justify-between text-white/70">
+                    <span>Care Treatments</span>
+                    <span className="tabular-nums font-semibold text-white">Ksh {addOnsTotal.toLocaleString()}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-white/80">
-                  <span>Doorstep Pickup & Return</span>
-                  <span className="text-[#fed65b] font-bold">FREE (within 1km)</span>
+                <div className="flex justify-between text-white/70">
+                  <span>Doorstep Rider Transit</span>
+                  <span className="text-emerald-400 font-semibold">FREE</span>
                 </div>
               </div>
 
               {/* Net Total Display */}
-              <div className="bg-white/10 p-4 rounded-2xl border border-white/20 flex justify-between items-center">
+              <div className="bg-white/[0.06] p-4 rounded-xl border border-white/[0.08] flex justify-between items-center">
                 <div>
-                  <span className="text-xs text-white/70 block uppercase font-bold">Estimated Total</span>
-                  <span className="text-2xl sm:text-3xl font-extrabold font-manrope text-[#fed65b]">
-                    Ksh {finalTotal.toLocaleString()}
+                  <span className="text-[10px] text-white/50 uppercase font-bold tracking-wider block">
+                    Calculated Total
                   </span>
+                  <motion.span 
+                    key={finalTotal}
+                    initial={{ scale: 0.96 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                    className="text-2xl sm:text-3xl font-extrabold font-manrope text-[#FED65B] tabular-nums"
+                  >
+                    Ksh {finalTotal.toLocaleString()}
+                  </motion.span>
                 </div>
-                <Truck className="w-8 h-8 text-[#fed65b] opacity-80" />
+                <Truck className="w-6 h-6 text-[#FED65B]/60" />
               </div>
 
               {/* Action Button */}
-              <button
+              <motion.button
+                whileTap={{ scale: 0.97 }}
                 disabled={finalTotal === 0}
                 onClick={handleBookQuote}
-                className={`w-full py-4 rounded-full font-extrabold font-manrope text-sm flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer ${
+                className={`w-full py-3.5 rounded-full font-bold font-manrope text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer ${
                   finalTotal === 0
-                    ? 'bg-white/20 text-white/50 cursor-not-allowed'
-                    : 'bg-[#fed65b] text-[#341168] hover:bg-white hover:scale-[1.02] active:scale-95'
+                    ? 'bg-white/10 text-white/40 cursor-not-allowed'
+                    : 'bg-[#FED65B] hover:bg-[#ffe180] text-[#140824] shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_4px_16px_rgba(254,214,91,0.25)]'
                 }`}
               >
                 <Truck className="w-4 h-4" />
-                <span>Book Collection with this Quote</span>
+                <span>Book Collection with this Estimate</span>
                 <ArrowRight className="w-4 h-4" />
-              </button>
-
-              <p className="text-[11px] text-white/60 text-center italic">
-                * Final weight and item count will be confirmed by Goldtribe rider upon pickup at your doorstep.
-              </p>
+              </motion.button>
             </div>
           </div>
         )}
 
         {/* View 2: Official Price List Tables */}
         {activeView === 'pricelist' && (
-          <div className="space-y-12 animate-fade-in">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              {/* Normal Laundry Table (5 cols) */}
-              <div className="lg:col-span-5 space-y-6">
-                <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-[#e5e2e1]">
-                  <div className="bg-[#341168] text-white p-5 flex justify-between items-center">
-                    <h3 className="font-bold font-manrope text-lg text-[#fed65b]">Normal Laundry</h3>
-                    <span className="text-xs font-bold bg-white/10 px-3 py-1 rounded-full text-white">Weight / Package</span>
-                  </div>
-
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs font-worksans">
-                      <thead>
-                        <tr className="bg-[#f0eded] text-[#341168] border-b border-[#e5e2e1] font-bold">
-                          <th className="px-4 py-3">Details</th>
-                          <th className="px-4 py-3">Weight</th>
-                          <th className="px-4 py-3 text-right">Kshs</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#e5e2e1]">
-                        {normalLaundryList.map((item, idx) => (
-                          <tr key={idx} className={idx % 2 === 1 ? 'bg-[#f6f3f2]' : 'bg-white'}>
-                            <td className="px-4 py-2.5 font-semibold text-[#1c1b1b]">{item.name}</td>
-                            <td className="px-4 py-2.5 text-[#4a4550]">{item.unit}</td>
-                            <td className="px-4 py-2.5 text-right font-bold text-[#341168]">{item.price.toFixed(2)}</td>
-                          </tr>
-                        ))}
-                        <tr className="bg-[#fed65b]/20 font-bold border-t-2 border-[#fed65b]">
-                          <td className="px-4 py-3 text-[#341168]">Super package</td>
-                          <td className="px-4 py-3 text-[#745c00]">1-7kg</td>
-                          <td className="px-4 py-3 text-right text-[#341168] text-sm">1,300.00</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <div className="p-3.5 bg-[#f6f3f2] text-[#4a4550] italic text-[11px] border-t border-[#e5e2e1]">
-                    * Super package includes wash, dry, ironing, and folding.
-                  </div>
-                </div>
-              </div>
-
-              {/* Dry Cleaning Price List Table (7 cols) */}
-              <div className="lg:col-span-7">
-                <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-[#e5e2e1] h-full flex flex-col">
-                  <div className="bg-[#735c00] text-white p-5 flex justify-between items-center">
-                    <h3 className="font-bold font-manrope text-lg text-[#fed65b]">Dry Cleaning Price List</h3>
-                    <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full text-white">Per Piece Rates</span>
-                  </div>
-
-                  <div className="overflow-y-auto max-h-[520px]">
-                    <table className="w-full text-left text-xs font-worksans">
-                      <thead className="sticky top-0 bg-[#f0eded] text-[#341168] border-b border-[#e5e2e1] font-bold z-10">
-                        <tr>
-                          <th className="px-5 py-3">Details</th>
-                          <th className="px-5 py-3">Pieces / Weight</th>
-                          <th className="px-5 py-3 text-right">Kshs</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#e5e2e1]">
-                        {dryCleaningList.map((item, idx) => (
-                          <tr key={idx} className={idx % 2 === 1 ? 'bg-[#f6f3f2]' : 'bg-white'}>
-                            <td className="px-5 py-2.5 font-semibold text-[#1c1b1b]">{item.name}</td>
-                            <td className="px-5 py-2.5 text-[#4a4550]">{item.unit}</td>
-                            <td className="px-5 py-2.5 text-right font-bold text-[#341168]">{item.price.toFixed(2)}</td>
-                          </tr>
-                        ))}
-                        <tr className="bg-[#f0eded] font-bold">
-                          <td className="px-5 py-2.5 text-[#1c1b1b]">Hanger per piece</td>
-                          <td className="px-5 py-2.5 text-[#4a4550]">Extra</td>
-                          <td className="px-5 py-2.5 text-right text-[#341168]">50.00</td>
-                        </tr>
-                        <tr className="bg-[#f0eded] font-bold">
-                          <td className="px-5 py-2.5 text-[#1c1b1b]">Laundry bag per piece</td>
-                          <td className="px-5 py-2.5 text-[#4a4550]">Reusable</td>
-                          <td className="px-5 py-2.5 text-right text-[#341168]">80.00</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <div className="p-4 bg-[#f6f3f2] border-t border-[#e5e2e1] flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-emerald-700 text-white flex items-center justify-center font-bold text-xs">
-                        M
-                      </div>
-                      <div>
-                        <span className="text-[10px] uppercase font-bold text-[#7b7581] block">Accepted Payment Terms</span>
-                        <span className="text-sm font-extrabold font-manrope text-[#341168]">MPESA</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => onProceedToBookingWithItems([], 0)}
-                      className="bg-[#341168] text-white px-4 py-2 rounded-full font-bold text-xs font-manrope hover:bg-[#4b2c7f] transition-colors cursor-pointer"
-                    >
-                      Book Collection Now
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Service Guidelines & T&Cs */}
-            <div className="pt-6 border-t border-[#e5e2e1]">
-              <h3 className="text-2xl font-extrabold font-manrope text-[#341168] mb-6">
-                Service Guidelines & T&Cs
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white p-6 rounded-3xl border border-[#e5e2e1] shadow-xs space-y-3">
-                  <div className="w-8 h-8 rounded-full bg-[#341168]/10 text-[#341168] flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-[#735c00]" />
-                  </div>
-                  <h4 className="font-bold font-manrope text-sm text-[#341168]">Maximum Economy</h4>
-                  <p className="text-xs text-[#4a4550] leading-relaxed">
-                    It's encouraged to have clothes in a load as it's more economical. Where a load is not enough for the minimum load, we charge per piece.
-                  </p>
-                </div>
-
-                <div className="bg-white p-6 rounded-3xl border border-[#e5e2e1] shadow-xs space-y-3">
-                  <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center">
-                    <Check className="w-4 h-4 text-emerald-700" />
-                  </div>
-                  <h4 className="font-bold font-manrope text-sm text-[#341168]">Efficiency Guarantee</h4>
-                  <p className="text-xs text-[#4a4550] leading-relaxed">
-                    We offer pick and drop services. This is part of our efficiency guarantee. We remove temporary stains to ensure premium quality.
-                  </p>
-                </div>
-
-                <div className="bg-white p-6 rounded-3xl border border-[#e5e2e1] shadow-xs space-y-3">
-                  <div className="w-8 h-8 rounded-full bg-[#fed65b]/30 text-[#745c00] flex items-center justify-center">
-                    <ShieldCheck className="w-4 h-4 text-[#341168]" />
-                  </div>
-                  <h4 className="font-bold font-manrope text-sm text-[#341168]">Fabric Sorting</h4>
-                  <p className="text-xs text-[#4a4550] leading-relaxed">
-                    Clothes are sorted according to colors to prevent bleeding and preserve the life of your precious garments.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom CTA Banner matching Image 1 */}
-            <div className="bg-[#341168] text-white rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="space-y-1 text-center md:text-left">
-                <h3 className="text-2xl sm:text-3xl font-extrabold font-manrope text-white">
-                  Ready to Refresh Your Wardrobe?
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Normal Laundry Table (5 cols) */}
+            <div className="lg:col-span-5 bg-white dark:bg-[#130722] rounded-2xl overflow-hidden border border-black/[0.08] dark:border-white/[0.1] shadow-xs">
+              <div className="p-4 sm:p-5 border-b border-black/[0.06] dark:border-white/[0.08] flex justify-between items-center">
+                <h3 className="font-bold font-manrope text-base text-neutral-900 dark:text-white">
+                  Wash, Dry & Steam Iron
                 </h3>
-                <p className="text-sm font-worksans text-white/80">
-                  Call us today for a free pickup from your home or office.
-                </p>
+                <span className="text-[11px] font-semibold text-neutral-500">Weight Tiers</span>
               </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-4">
-                <div className="text-center">
-                  <span className="text-[10px] font-bold text-[#fed65b] uppercase tracking-wider block mb-1 font-manrope">CALL US NOW</span>
-                  <a
-                    href="tel:0777349743"
-                    className="bg-[#fed65b] text-[#341168] px-6 py-3 rounded-full font-bold font-manrope text-sm hover:bg-white transition-all shadow-md inline-flex items-center gap-2 cursor-pointer"
-                  >
-                    <span>📞 0777 349 743</span>
-                  </a>
-                </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-worksans">
+                  <thead>
+                    <tr className="bg-neutral-50 dark:bg-white/[0.03] text-neutral-500 border-b border-black/[0.06] dark:border-white/[0.08]">
+                      <th className="px-4 py-2.5 font-semibold">Service</th>
+                      <th className="px-4 py-2.5 font-semibold">Load</th>
+                      <th className="px-4 py-2.5 text-right font-semibold">Price</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-black/[0.05] dark:divide-white/[0.06]">
+                    {normalLaundryTiers.map((group, gIdx) => (
+                      <React.Fragment key={gIdx}>
+                        <tr className="bg-[#5E228B]/[0.05] dark:bg-white/[0.04]">
+                          <td colSpan={3} className="px-4 py-2 font-bold font-manrope text-[11px] uppercase tracking-wider text-[#5E228B] dark:text-[#FED65B]">
+                            {group.tier}
+                          </td>
+                        </tr>
+                        {group.items.map((item, i) => (
+                          <tr key={i} className="hover:bg-neutral-50/50 dark:hover:bg-white/[0.02]">
+                            <td className="px-4 py-2 font-medium text-neutral-900 dark:text-white pl-6">{item.name}</td>
+                            <td className="px-4 py-2 text-neutral-500">{item.unit}</td>
+                            <td className="px-4 py-2 text-right font-bold font-manrope text-[#5E228B] dark:text-[#FED65B] tabular-nums">
+                              Ksh {item.price.toLocaleString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-                <div className="text-center">
-                  <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider block mb-1 font-manrope">BOOK & TRACK</span>
-                  <button
-                    onClick={() => onProceedToBookingWithItems([], 0)}
-                    className="bg-white text-[#341168] px-6 py-3 rounded-full font-bold font-manrope text-sm hover:bg-[#fed65b] transition-all shadow-md inline-flex items-center gap-2 cursor-pointer"
-                  >
-                    <span>🌐 Book Online</span>
-                  </button>
-                </div>
+            {/* Dry Cleaning Rates (7 cols) */}
+            <div className="lg:col-span-7 bg-white dark:bg-[#130722] rounded-2xl overflow-hidden border border-black/[0.08] dark:border-white/[0.1] shadow-xs">
+              <div className="p-4 sm:p-5 border-b border-black/[0.06] dark:border-white/[0.08] flex justify-between items-center">
+                <h3 className="font-bold font-manrope text-base text-neutral-900 dark:text-white">
+                  Executive Dry Cleaning Rates
+                </h3>
+                <span className="text-[11px] font-semibold text-neutral-500">Formal & Delicate Garments</span>
+              </div>
+
+              <div className="overflow-x-auto max-h-[500px]">
+                <table className="w-full text-left text-xs font-worksans">
+                  <thead className="sticky top-0 bg-neutral-50 dark:bg-[#1c0d2e] text-neutral-500 border-b border-black/[0.06] dark:border-white/[0.08]">
+                    <tr>
+                      <th className="px-4 py-2.5 font-semibold">Garment Type</th>
+                      <th className="px-4 py-2.5 font-semibold">Unit</th>
+                      <th className="px-4 py-2.5 text-right font-semibold">Price</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-black/[0.05] dark:divide-white/[0.06]">
+                    {dryCleaningList.map((item, i) => (
+                      <tr key={i} className="hover:bg-neutral-50/50 dark:hover:bg-white/[0.02]">
+                        <td className="px-4 py-2.5 font-medium text-neutral-900 dark:text-white">{item.name}</td>
+                        <td className="px-4 py-2.5 text-neutral-500">{item.unit}</td>
+                        <td className="px-4 py-2.5 text-right font-bold font-manrope text-[#5E228B] dark:text-[#FED65B] tabular-nums">
+                          Ksh {item.price.toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -558,4 +495,3 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({
     </section>
   );
 };
-

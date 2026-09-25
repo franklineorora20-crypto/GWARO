@@ -1,174 +1,188 @@
-import React from 'react';
-import { ArrowRight, ShieldCheck, Truck, Sparkles, Clock, CheckCircle2, Calculator, Zap } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion } from 'motion/react';
+import { ArrowRight, ShieldCheck, Truck, Sparkles, Clock, CheckCircle2, Calculator, Zap, ChevronRight } from 'lucide-react';
+import heroImage from '../assets/images/hero_laundry_pristine_1790275438376.jpg';
 
 interface HeroProps {
-  onOpenBooking: () => void;
+  onOpenBooking: (preselectedItem?: string) => void;
   onNavigateToTrack: () => void;
   onNavigateToCalculator: () => void;
 }
+
+const QUICK_ESTIMATES = [
+  { id: 'wash', name: 'Wash & Fold (1-7kg)', price: 450, unit: 'load', time: '24h return' },
+  { id: 'suit', name: 'Executive 2-Pc Suit', price: 450, unit: 'suit', time: '48h finish' },
+  { id: 'duvet', name: 'Duvet Sanitization', price: 850, unit: 'piece', time: '24h fluff' },
+];
 
 export const Hero: React.FC<HeroProps> = ({
   onOpenBooking,
   onNavigateToTrack,
   onNavigateToCalculator
 }) => {
-  return (
-    <section id="hero" className="relative min-h-[85vh] flex items-center overflow-hidden bg-white dark:bg-[#0f0717] pt-8 pb-12 sm:pb-16 transition-colors duration-200">
-      {/* Background Patterns */}
-      <div className="absolute inset-0 hero-pattern pointer-events-none opacity-50 dark:opacity-10"></div>
-      <div className="absolute top-20 -right-20 w-96 h-96 bg-[#5E228B]/10 dark:bg-[#FED65B]/10 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute bottom-10 -left-20 w-96 h-96 bg-[#FED65B]/20 dark:bg-[#5E228B]/20 rounded-full blur-3xl pointer-events-none"></div>
+  const [selectedQuick, setSelectedQuick] = useState(QUICK_ESTIMATES[0]);
 
-      <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-        {/* Text Left Column */}
+  return (
+    <section id="hero" className="relative min-h-[88vh] flex items-center overflow-hidden bg-[#FAFAFB] dark:bg-[#0c0418] pt-10 pb-16 sm:pb-20 transition-colors duration-200">
+      {/* Background Micro Ambient Glow */}
+      <div className="absolute inset-0 hero-pattern pointer-events-none"></div>
+      <div className="absolute top-12 right-1/4 w-[420px] h-[420px] bg-[#5E228B]/[0.07] dark:bg-[#FED65B]/[0.05] rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-10 left-10 w-[350px] h-[350px] bg-[#FED65B]/[0.08] dark:bg-[#5E228B]/[0.08] rounded-full blur-[90px] pointer-events-none" />
+
+      <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-12 gap-12 lg:gap-14 items-center">
+        {/* Left Column: Editorial Headline & High-Intent Action */}
         <div className="lg:col-span-7 space-y-6 text-left">
-          {/* Tagline Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#FED65B]/20 dark:bg-[#FED65B]/10 border border-[#D8A620] text-[#5E228B] dark:text-[#FED65B] font-bold text-xs sm:text-sm font-manrope shadow-2xs">
-            <ShieldCheck className="w-4 h-4 text-[#D8A620]" />
-            <span>Premium Concierge Laundry & Dry Cleaning</span>
+          {/* Unboxed Metadata Kicker (Anti-slop Zero-Pill) */}
+          <div className="flex items-center gap-2 text-xs font-semibold tracking-tight text-[#5E228B] dark:text-[#FED65B]">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Concierge Garment Care</span>
+            </span>
+            <span className="text-neutral-300 dark:text-neutral-600 font-normal">·</span>
+            <span>Rongai & Ngong Hubs</span>
+            <span className="text-neutral-300 dark:text-neutral-600 font-normal">·</span>
+            <span>24h Turnaround</span>
           </div>
 
-          {/* Display Headline */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold font-manrope text-[#2B1B40] dark:text-white leading-[1.12] tracking-tight">
-            Pristine Garment Care <br />
-            <span className="text-[#5E228B] dark:text-[#FED65B] bg-gradient-to-r from-[#5E228B] via-[#7B33B3] to-[#D8A620] dark:from-[#FED65B] dark:to-[#FFF0B3] bg-clip-text text-transparent drop-shadow-xs">
-              For Every Fiber.
+          {/* Typographic Display Headline */}
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold font-manrope text-neutral-900 dark:text-white leading-[1.1] sm:leading-[1.08] tracking-[-0.03em] [text-wrap:balance] break-words">
+            Pristine Garment Care, <br className="hidden sm:inline" />
+            <span className="bg-gradient-to-r from-[#5E228B] via-[#7B33B3] to-[#D8A620] dark:from-[#FED65B] dark:via-[#F6E08A] dark:to-[#FFF] bg-clip-text text-transparent">
+              Engineered with Obsession.
             </span>
           </h1>
 
-          {/* Description */}
-          <p className="text-base sm:text-lg font-worksans text-[#2B2B2B] dark:text-gray-200 max-w-2xl leading-relaxed">
-            Goldtribe Link Laundromat delivers professional, high-end garment care for busy professionals and families in <span className="font-bold text-[#5E228B] dark:text-[#FED65B]">Rongai</span> and <span className="font-bold text-[#5E228B] dark:text-[#FED65B]">Ngong</span>. We don't just wash; we revitalize.
+          {/* Prose Description */}
+          <p className="text-sm sm:text-base lg:text-lg font-worksans text-neutral-600 dark:text-neutral-300 max-w-xl leading-relaxed">
+            From executive suits to hypoallergenic duvet revival, Goldtribe delivers high-end garment stewardship right to your doorstep in Rongai and Ngong.
           </p>
 
-          {/* Quick Features List */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs sm:text-sm font-manrope font-bold text-[#222222] dark:text-white pt-1">
-            <div className="flex items-center gap-2 bg-white/90 dark:bg-[#1a0c2a] p-2.5 rounded-xl border border-[#E5E2E1] dark:border-white/10 shadow-2xs">
-              <CheckCircle2 className="w-4 h-4 text-[#D8A620]" />
-              <span>Doorstep Pickup</span>
+          {/* Emil Kowalski Style Interactive Quick Estimate Widget */}
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#140824] border border-black/[0.08] dark:border-white/[0.1] shadow-[0_2px_8px_rgba(0,0,0,0.04)] space-y-3 max-w-xl">
+            <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400 font-medium">
+              <span className="font-semibold text-neutral-800 dark:text-neutral-200">Instant Estimate Selector</span>
+              <span>No surprise fees</span>
             </div>
-            <div className="flex items-center gap-2 bg-white/90 dark:bg-[#1a0c2a] p-2.5 rounded-xl border border-[#E5E2E1] dark:border-white/10 shadow-2xs">
-              <Clock className="w-4 h-4 text-[#5E228B] dark:text-[#FED65B]" />
-              <span>Same Day Delivery</span>
+
+            {/* Segmented Quick Switcher */}
+            <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-neutral-100 dark:bg-white/[0.05]">
+              {QUICK_ESTIMATES.map((item) => {
+                const isSelected = selectedQuick.id === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setSelectedQuick(item)}
+                    className={`relative py-1.5 px-1.5 sm:px-2 rounded-lg text-[11px] sm:text-xs font-semibold font-manrope transition-colors cursor-pointer text-center truncate ${
+                      isSelected
+                        ? 'text-neutral-900 dark:text-white'
+                        : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-white'
+                    }`}
+                  >
+                    {isSelected && (
+                      <motion.div
+                        layoutId="activeEstimatePill"
+                        transition={{ type: "spring", stiffness: 450, damping: 30 }}
+                        className="absolute inset-0 rounded-lg bg-white dark:bg-[#23123d] shadow-[0_1px_3px_rgba(0,0,0,0.08)] -z-10"
+                      />
+                    )}
+                    <span className="truncate">{item.name.split(' ')[0]}</span>
+                  </button>
+                );
+              })}
             </div>
-            <div className="flex items-center gap-2 bg-white/90 dark:bg-[#1a0c2a] p-2.5 rounded-xl border border-[#E5E2E1] dark:border-white/10 shadow-2xs">
-              <Sparkles className="w-4 h-4 text-[#D8A620]" />
-              <span>Eco Sanitized Wash</span>
+
+            {/* Live Counter & Pre-Book Trigger */}
+            <div className="flex items-center justify-between pt-1 text-xs">
+              <div className="space-y-0.5 min-w-0 pr-2">
+                <div className="flex items-baseline gap-1.5 flex-wrap">
+                  <span className="text-lg sm:text-2xl font-extrabold font-manrope text-[#5E228B] dark:text-[#FED65B] tabular-nums">
+                    Ksh {selectedQuick.price.toLocaleString()}
+                  </span>
+                  <span className="text-neutral-500 text-[11px]">/ {selectedQuick.unit}</span>
+                </div>
+                <div className="text-[11px] text-neutral-500 dark:text-neutral-400 font-medium truncate">
+                  {selectedQuick.name} · {selectedQuick.time}
+                </div>
+              </div>
+
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => onOpenBooking(selectedQuick.name)}
+                className="px-3 sm:px-3.5 py-2 rounded-xl bg-[#5E228B] hover:bg-[#501a78] text-white font-bold text-xs font-manrope shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_2px_6px_rgba(94,34,139,0.25)] flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+              >
+                <span>Book This</span>
+                <ArrowRight className="w-3.5 h-3.5 text-[#FED65B]" />
+              </motion.button>
             </div>
           </div>
 
-          {/* Streamlined Call-to-action Section */}
-          <div className="space-y-3 pt-2">
-            {/* Primary Big Purple Button */}
-            <button
-              onClick={onOpenBooking}
-              className="w-full sm:w-auto bg-[#5E228B] text-white px-8 py-4 sm:py-4.5 rounded-full font-black font-manrope text-base sm:text-lg hover:bg-[#4A1772] transition-all flex items-center justify-center gap-3 shadow-xl hover:shadow-2xl hover:shadow-purple-900/30 active:scale-98 group cursor-pointer border-2 border-[#FED65B]"
+          {/* Primary Action Buttons */}
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 pt-1">
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => onOpenBooking()}
+              className="w-full sm:w-auto bg-[#5E228B] hover:bg-[#4E1775] text-white px-5 sm:px-7 py-3 sm:py-3.5 rounded-full font-bold font-manrope text-xs sm:text-sm transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_4px_16px_rgba(94,34,139,0.3)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_8px_24px_rgba(94,34,139,0.4)] flex items-center justify-center gap-2 cursor-pointer group"
             >
-              <Truck className="w-6 h-6 text-[#FED65B]" />
-              <span>Book a Collection</span>
-              <ArrowRight className="w-5 h-5 text-[#FED65B] group-hover:translate-x-1.5 transition-transform" />
-            </button>
+              <Truck className="w-4 h-4 text-[#FED65B]" />
+              <span>Schedule Free Doorstep Pickup</span>
+              <ArrowRight className="w-4 h-4 text-[#FED65B] group-hover:translate-x-1 transition-transform" />
+            </motion.button>
 
-            {/* Secondary Text Links below CTA */}
-            <div className="flex items-center gap-3 text-xs sm:text-sm font-bold font-manrope text-[#222222] dark:text-gray-200 pt-1">
-              <button
-                onClick={onNavigateToTrack}
-                className="hover:text-[#5E228B] dark:hover:text-[#FED65B] underline decoration-2 decoration-[#5E228B]/40 dark:decoration-[#FED65B]/40 hover:decoration-[#5E228B] cursor-pointer transition-colors"
-              >
-                Track Order
-              </button>
-              <span className="text-gray-300 dark:text-gray-600">|</span>
-              <button
-                onClick={onNavigateToCalculator}
-                className="hover:text-[#5E228B] dark:hover:text-[#FED65B] underline decoration-2 decoration-[#5E228B]/40 dark:decoration-[#FED65B]/40 hover:decoration-[#5E228B] cursor-pointer transition-colors flex items-center gap-1"
-              >
-                <Calculator className="w-3.5 h-3.5 text-[#D8A620]" />
-                <span>Get Instant Quote</span>
-              </button>
-            </div>
-
-            {/* Urgency Pickup Slot Bar */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs font-bold font-manrope shadow-2xs">
-              <Zap className="w-4 h-4 text-amber-600 dark:text-amber-400 fill-amber-500 animate-pulse" />
-              <span>Next pickup slot: <strong className="text-[#5E228B] dark:text-[#FED65B]">Today 4:00 PM – 6:00 PM</strong> in Rongai & Ngong</span>
-            </div>
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={onNavigateToCalculator}
+              className="w-full sm:w-auto px-5 py-3 sm:py-3.5 rounded-full border border-black/[0.1] dark:border-white/[0.12] bg-white dark:bg-white/[0.04] hover:bg-neutral-50 dark:hover:bg-white/[0.08] text-neutral-800 dark:text-neutral-100 font-bold font-manrope text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+            >
+              <Calculator className="w-4 h-4 text-[#E2B227]" />
+              <span>Full Price Calculator</span>
+            </motion.button>
           </div>
 
-          {/* Social Proof Stat Line */}
-          <div className="flex items-center gap-4 pt-4 border-t border-[#E5E2E1] dark:border-white/10">
-            <div className="flex -space-x-3">
-              <div className="w-9 h-9 rounded-full border-2 border-white dark:border-[#1a0c2a] bg-[#5E228B] text-white font-bold text-xs flex items-center justify-center">
+          {/* Social Proof Line */}
+          <div className="flex items-center gap-3 pt-2 text-xs text-neutral-600 dark:text-neutral-400 font-medium">
+            <div className="flex -space-x-2">
+              <span className="w-7 h-7 rounded-full bg-[#5E228B] text-white font-bold text-[10px] flex items-center justify-center border-2 border-white dark:border-[#0c0418]">
                 RN
-              </div>
-              <div className="w-9 h-9 rounded-full border-2 border-white dark:border-[#1a0c2a] bg-[#D8A620] text-[#2F2F2F] font-bold text-xs flex items-center justify-center">
+              </span>
+              <span className="w-7 h-7 rounded-full bg-[#E2B227] text-neutral-900 font-bold text-[10px] flex items-center justify-center border-2 border-white dark:border-[#0c0418]">
                 NG
-              </div>
-              <div className="w-9 h-9 rounded-full border-2 border-white dark:border-[#1a0c2a] bg-[#5E228B] text-white font-bold text-xs flex items-center justify-center">
-                4.8★
-              </div>
+              </span>
+              <span className="w-7 h-7 rounded-full bg-neutral-900 dark:bg-neutral-800 text-white font-bold text-[10px] flex items-center justify-center border-2 border-white dark:border-[#0c0418]">
+                ★
+              </span>
             </div>
-            <p className="text-xs sm:text-sm font-worksans text-[#2D2D2D] dark:text-gray-300 font-medium">
-              <span className="text-[#5E228B] dark:text-[#FED65B] font-extrabold font-manrope text-base">500+</span> local families served weekly • <span className="font-bold text-[#5E228B] dark:text-[#FED65B]">4.8★ Google Rating</span>
-            </p>
+            <span>
+              Trusted by <strong className="text-neutral-900 dark:text-white font-bold">500+ households</strong> across Rongai & Ngong weekly
+            </span>
           </div>
         </div>
 
-        {/* Hero Visual (Bento Grid) - Benefit Driven Visuals */}
-        <div className="lg:col-span-5 grid grid-cols-2 grid-rows-2 gap-3.5 h-[440px] sm:h-[500px]">
-          {/* Card 1: Crisp folded executive shirts */}
-          <div className="col-span-1 row-span-2 rounded-3xl overflow-hidden relative shadow-xl border border-white/40 dark:border-white/10 group">
+        {/* Right Column: Hero Visual Asset with Emil Kowalski Craft Framing */}
+        <div className="lg:col-span-5 relative">
+          <div className="relative rounded-3xl overflow-hidden border border-black/[0.08] dark:border-white/[0.1] shadow-[0_20px_48px_-12px_rgba(0,0,0,0.18)] bg-neutral-100 dark:bg-white/[0.04] aspect-[4/3] group">
             <img 
-              src="https://images.unsplash.com/photo-1517677208171-0bc6725a3e60?auto=format&fit=crop&w=800&q=80" 
-              alt="Crisp freshly ironed and folded clothes" 
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              src={heroImage} 
+              alt="Pristine folded linen and executive garment care by Goldtribe" 
+              className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              referrerPolicy="no-referrer"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#391258]/90 via-[#391258]/30 to-transparent flex flex-col justify-end p-5">
-              <span className="bg-[#FED65B] text-[#2F2F2F] font-black text-[10px] px-2.5 py-1 rounded-full w-fit uppercase tracking-wider shadow-xs">
-                Wrinkle-Free Guarantee
-              </span>
-              <p className="text-white font-manrope font-bold text-sm sm:text-base mt-1.5 leading-snug">
-                Pristine Folding & Executive Steam Pressing
-              </p>
-            </div>
-          </div>
 
-          {/* Card 2: Doorstep Boda/Rider Pickup */}
-          <div className="col-span-1 row-span-1 rounded-3xl bg-gradient-to-br from-[#5E228B] to-[#4A1772] p-4 sm:p-5 flex flex-col justify-between shadow-lg text-white relative overflow-hidden group">
-            <div className="flex justify-between items-start">
-              <div className="w-10 h-10 rounded-2xl bg-[#FED65B] text-[#5E228B] flex items-center justify-center font-black">
-                <Truck className="w-5 h-5 text-[#5E228B]" />
-              </div>
-              <span className="text-[10px] font-extrabold uppercase tracking-wider bg-white/20 text-[#FED65B] px-2 py-0.5 rounded-full">
-                Doorstep Pickup
-              </span>
-            </div>
-            <div>
-              <p className="font-manrope font-black text-base sm:text-lg leading-tight text-white">
-                Rongai & Ngong Rider Concierge
-              </p>
-              <p className="text-[11px] font-worksans text-white/80 mt-1">
-                We pick up right from your gate or office doorstep
-              </p>
-            </div>
-          </div>
+            {/* Subtle Gradient Contrast Scrim */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-6" />
 
-          {/* Card 3: Same Day Express Guarantee */}
-          <div className="col-span-1 row-span-1 rounded-3xl bg-[#D8A620] p-4 sm:p-5 flex flex-col justify-between shadow-lg text-[#2F2F2F] hover:bg-[#E5B22A] transition-colors relative overflow-hidden">
-            <div className="flex justify-between items-start">
-              <div className="w-10 h-10 rounded-2xl bg-[#5E228B] text-white flex items-center justify-center">
-                <Clock className="w-5 h-5 text-[#FED65B]" />
+            {/* Overlay Info Card */}
+            <div className="absolute bottom-3 left-3 right-3 sm:bottom-5 sm:left-5 sm:right-5 p-3 sm:p-4 rounded-2xl bg-white/90 dark:bg-[#120722]/90 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-lg flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <div className="text-xs font-bold font-manrope text-neutral-900 dark:text-white truncate">
+                  Executive Steam Finish
+                </div>
+                <div className="text-[10px] sm:text-[11px] text-neutral-500 dark:text-neutral-300 font-medium truncate">
+                  Zero shrinkage · Fiber-nourishing eco solvent
+                </div>
               </div>
-              <span className="text-[10px] font-extrabold uppercase tracking-wider bg-[#5E228B]/15 text-[#5E228B] px-2 py-0.5 rounded-full">
-                Express
-              </span>
-            </div>
-            <div>
-              <p className="font-manrope font-black text-base sm:text-lg leading-tight text-[#2F2F2F]">
-                24hr Express <br />Turnaround
-              </p>
-              <p className="text-[11px] font-worksans text-[#2F2F2F]/90 font-medium mt-1">
-                Pickup morning, returned fresh same evening
-              </p>
+              <div className="w-8 h-8 rounded-xl bg-[#5E228B] text-white flex items-center justify-center shrink-0">
+                <Sparkles className="w-4 h-4 text-[#FED65B]" />
+              </div>
             </div>
           </div>
         </div>

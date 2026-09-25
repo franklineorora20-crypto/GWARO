@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 dotenv.config();
 
 const app = express();
-const PORT = Number(process.env.PORT || 3001);
+const PORT = Number(process.env.PORT || 3000);
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const MPESA_CONSUMER_KEY = process.env.MPESA_CONSUMER_KEY || 'suDb5tiimBNZC72tbpIGXAM3ZKgOe3MAudxAgXChyjSjGDAg';
@@ -722,18 +722,31 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Serve static assets in production or container environments
-const distPath = path.join(process.cwd(), 'dist');
-app.use(express.static(distPath));
+async function startServer() {
+  if (process.env.NODE_ENV !== 'production') {
+    const { createServer: createViteServer } = await import('vite');
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
+  } else {
+    // Serve static assets in production or container environments
+    const distPath = path.join(process.cwd(), 'dist');
+    app.use(express.static(distPath));
 
-// Fallback to SPA index.html for client-side routing
-app.get('*', (req, res) => {
-  if (req.path.startsWith('/api')) {
-    return res.status(404).json({ error: 'API endpoint not found' });
+    // Fallback to SPA index.html for client-side routing
+    app.get('*', (req, res) => {
+      if (req.path.startsWith('/api')) {
+        return res.status(404).json({ error: 'API endpoint not found' });
+      }
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
   }
-  res.sendFile(path.join(distPath, 'index.html'));
-});
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running on http://0.0.0.0:${PORT}`);
-});
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is running on http://0.0.0.0:${PORT}`);
+  });
+}
+
+startServer();

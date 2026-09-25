@@ -229,7 +229,7 @@ export const ManualMpesaPayment: React.FC<ManualMpesaPaymentProps> = ({
                   </span>
                 </div>
                 <h3 className="text-xl sm:text-2xl font-black font-manrope text-[#341168]">
-                  Pay Upon Delivery / Pickup
+                  Cash or Till at Doorstep
                 </h3>
               </div>
               {onClose && (
@@ -267,7 +267,7 @@ export const ManualMpesaPayment: React.FC<ManualMpesaPaymentProps> = ({
               className="w-full min-h-[48px] h-12 py-3 rounded-2xl bg-[#6B46C1] text-white font-black font-manrope text-base hover:bg-[#341168] disabled:opacity-50 transition-all cursor-pointer shadow-lg shadow-[#6B46C1]/20 active:scale-98 flex items-center justify-center gap-2"
             >
               <Truck className="w-5 h-5 text-[#D4AF37]" />
-              <span>Confirm Order (Pay on Delivery)</span>
+              <span>Confirm Booking</span>
             </button>
 
             <div className="bg-[#FFFDF0] rounded-2xl p-3 sm:p-3.5 border border-[#D4AF37]/50 flex items-center gap-3 text-xs text-[#524100] font-bold">
