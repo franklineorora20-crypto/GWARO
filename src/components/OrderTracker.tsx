@@ -7,6 +7,7 @@ import {
   UserCheck, ShieldAlert, Edit3, ArrowUpRight, Filter, ChevronRight, Tag, AlertCircle, Calendar
 } from 'lucide-react';
 import { openPrintableReceipt } from '../lib/receiptGenerator';
+import { formatDateSafe } from '../lib/dateUtils';
 
 interface OrderTrackerProps {
   orders: Order[];
@@ -365,7 +366,7 @@ const [activeOrder, setActiveOrder] = useState<Order | null>(() => {
                             <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#341168]/10 text-[#341168]">
                               {order.branch}
                             </span>
-                            <span className="text-xs text-[#7b7581]">{order.createdAt}</span>
+                            <span className="text-xs text-[#7b7581]">{formatDateSafe(order.createdAt)}</span>
                           </div>
 
                           <div className="flex items-center gap-2">
@@ -885,7 +886,7 @@ const [activeOrder, setActiveOrder] = useState<Order | null>(() => {
                               #{order.id}
                             </span>
                             <span className="text-[11px] text-[#7b7581] font-worksans">
-                              {order.createdAt}
+                              {formatDateSafe(order.createdAt)}
                             </span>
                           </div>
                           <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full font-manrope shrink-0 ${
@@ -978,7 +979,7 @@ const [activeOrder, setActiveOrder] = useState<Order | null>(() => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#7b7581]">Date Created:</span>
-                  <span className="font-bold text-[#1c1b1b]">{receiptModalOrder.createdAt}</span>
+                  <span className="font-bold text-[#1c1b1b]">{formatDateSafe(receiptModalOrder.createdAt)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#7b7581]">Scheduled Pickup:</span>

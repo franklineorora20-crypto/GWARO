@@ -1,5 +1,6 @@
 import type { AdminOrder } from "../lib/adminOrders";
 import type { OrderStatus } from "../types";
+import { parseSafeDate } from "../lib/dateUtils";
 
 export interface AdminKpis {
   totalOrders: number;
@@ -12,7 +13,8 @@ export interface AdminKpis {
 }
 
 function isSameLocalDay(iso: string, ref: Date): boolean {
-  const d = new Date(iso);
+  const d = parseSafeDate(iso);
+  if (!d) return false;
 
   return (
     d.getFullYear() === ref.getFullYear() &&
@@ -26,7 +28,8 @@ function isSameLocalMonth(
   ref: Date
 ): boolean {
 
-  const d = new Date(iso);
+  const d = parseSafeDate(iso);
+  if (!d) return false;
 
   return (
     d.getFullYear() === ref.getFullYear() &&

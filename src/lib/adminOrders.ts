@@ -9,6 +9,7 @@ import {
   deleteFirebaseOrder 
 } from "./firebaseOrders";
 import { SAMPLE_ORDERS } from "../data/initialData";
+import { toIsoStringSafe } from "./dateUtils";
 
 export interface AdminOrder extends Order {
   dbId: number;
@@ -45,7 +46,7 @@ export function mapRowToAdminOrder(
       (row.tracking_id as string | null) ?? (row.trackingId as string | null) ?? base.id,
 
     rawCreatedAt:
-      (row.createdAt as string) ?? (row.created_at as string) ?? new Date().toISOString(),
+      toIsoStringSafe(row.createdAt ?? row.created_at ?? base.createdAt),
 
     pickupDate:
       (row.pickupDate as string) ?? (row.pickup_date as string) ?? undefined,
@@ -145,7 +146,7 @@ export async function fetchAdminOrders(): Promise<AdminOrder[]> {
           ...o,
           dbId: idx + 1,
           trackingId: o.id,
-          rawCreatedAt: o.createdAt || new Date().toISOString(),
+          rawCreatedAt: toIsoStringSafe(o.createdAt),
         }));
       }
     } catch (e) {
@@ -183,7 +184,7 @@ export async function fetchAdminOrders(): Promise<AdminOrder[]> {
           ...o,
           dbId: idx + 1,
           trackingId: o.id,
-          rawCreatedAt: o.createdAt || new Date().toISOString(),
+          rawCreatedAt: toIsoStringSafe(o.createdAt),
         }));
       }
     }
@@ -195,7 +196,7 @@ export async function fetchAdminOrders(): Promise<AdminOrder[]> {
     ...o,
     dbId: idx + 1,
     trackingId: o.id,
-    rawCreatedAt: o.createdAt || new Date().toISOString(),
+    rawCreatedAt: toIsoStringSafe(o.createdAt),
   }));
 }
 

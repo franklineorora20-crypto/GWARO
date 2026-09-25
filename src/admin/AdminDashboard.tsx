@@ -46,6 +46,12 @@ import { Logo } from "../components/Logo";
 import { openPrintableReceipt } from "../lib/receiptGenerator";
 import type { Order } from "../types";
 import { useDarkMode } from "../lib/useDarkMode";
+import {
+  formatDateSafe,
+  toInputDateValue,
+  getSafeTimestamp,
+  formatPickupSchedule,
+} from "../lib/dateUtils";
 
 const STATUS_OPTIONS: OrderStatus[] = [
   "Order Received",
@@ -94,16 +100,7 @@ function formatMoney(n: number) {
   return `Ksh ${n.toLocaleString()}`;
 }
 
-function formatDate(iso: string) {
-  try {
-    return new Date(iso).toLocaleString(undefined, {
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
-  } catch {
-    return iso;
-  }
-}
+const formatDate = formatDateSafe;
 
 function getStatusBadgeStyle(status: OrderStatus) {
   switch (status) {
@@ -174,7 +171,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   useEffect(() => {
     if (selected) {
-      setEditingDate(selected.pickupDate || new Date().toISOString().split('T')[0]);
+      setEditingDate(toInputDateValue(selected.pickupDate || selected.rawCreatedAt));
       setEditingSlot(selected.timeSlot || 'Morning (8:00 AM - 12:00 PM)');
       setEditingReceiptCode(selected.mpesaReceiptNumber || selected.mpesaRef || '');
       setEditingMpesaPhone(selected.mpesaPhone || selected.phone || '254708374149');
@@ -298,8 +295,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
 
     list.sort((a, b) => {
-      const ta = new Date(a.rawCreatedAt).getTime();
-      const tb = new Date(b.rawCreatedAt).getTime();
+      const ta = getSafeTimestamp(a.rawCreatedAt);
+      const tb = getSafeTimestamp(b.rawCreatedAt);
       return sortAsc ? ta - tb : tb - ta;
     });
 
@@ -827,7 +824,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           {(order.pickupDate || order.timeSlot) && (
                             <div className="text-[10px] font-extrabold text-[#5E228B] dark:text-[#FED65B] mt-0.5 flex items-center gap-1">
                               <Calendar className="w-3 h-3 text-[#FED65B] shrink-0" />
-                              <span>{order.pickupDate || 'Scheduled'} {order.timeSlot ? `(${order.timeSlot})` : ''}</span>
+                              <span>{formatPickupSchedule(order.pickupDate, order.timeSlot)}</span>
                             </div>
                           )}
                         </td>

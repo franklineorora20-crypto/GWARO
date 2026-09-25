@@ -1,6 +1,7 @@
 import type { Order } from "../types";
 import { supabase, isSupabaseConfigured } from "./supabase";
 import { isFirebaseConfigured, getFirebaseOrders, getFirebaseOrderByTrackingId } from "./firebaseOrders";
+import { toIsoStringSafe } from "./dateUtils";
 
 export function mapDbOrderToOrder(
   row: Record<string, unknown>
@@ -48,7 +49,7 @@ export function mapDbOrderToOrder(
       "Order Received",
 
     createdAt:
-      (row.createdAt as string) ?? (row.created_at as string) ?? new Date().toISOString(),
+      toIsoStringSafe(row.createdAt ?? row.created_at),
 
     estimatedDelivery:
       (row.estimatedDelivery as string) ??

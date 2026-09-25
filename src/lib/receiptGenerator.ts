@@ -1,4 +1,5 @@
 import type { Order } from "../types";
+import { formatDateSafe } from "./dateUtils";
 
 /**
  * Checks if an order status or payment status is verified as completed / paid.
@@ -20,11 +21,7 @@ export function isReceiptAvailable(order: Order): boolean {
  * Optimized for both high-resolution screen rendering and print / PDF output via window.print().
  */
 export function generateReceiptHtml(order: Order): string {
-  const formattedDate = order.createdAt 
-    ? (new Date(order.createdAt).toString() !== 'Invalid Date' 
-        ? new Date(order.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-        : order.createdAt)
-    : new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const formattedDate = formatDateSafe(order.createdAt);
 
   const receiptCode = order.mpesaReceiptNumber || order.mpesaRef || `REC-${order.id.replace(/^GL-/, '')}`;
   const totalAmount = order.totalPrice ? order.totalPrice.toLocaleString('en-KE', { style: 'currency', currency: 'KES' }) : 'KES 0.00';
