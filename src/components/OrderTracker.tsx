@@ -24,6 +24,7 @@ export const OrderTracker: React.FC<OrderTrackerProps> = ({
 }) => {
   // Mode state: Customer view vs Staff Attendant view
   const [viewMode, setViewMode] = useState<'customer' | 'attendant'>('customer');
+  const [isSearching, setIsSearching] = useState(false);
 
 const [searchId, setSearchId] = useState(initialSearchId || '');
 const [activeOrder, setActiveOrder] = useState<Order | null>(() => {
@@ -58,12 +59,15 @@ const [activeOrder, setActiveOrder] = useState<Order | null>(() => {
     return;
   }
 
-  const found = orders.find((o) =>
-    String(o.id ?? '').toLowerCase() === query ||
-    String(o.phone ?? '').includes(query)
-  );
-
-  setActiveOrder(found ?? null);
+  setIsSearching(true);
+  setTimeout(() => {
+    const found = orders.find((o) =>
+      String(o.id ?? '').toLowerCase() === query ||
+      String(o.phone ?? '').includes(query)
+    );
+    setActiveOrder(found ?? null);
+    setIsSearching(false);
+  }, 260);
 };
 
   useEffect(() => {
@@ -80,10 +84,14 @@ const [activeOrder, setActiveOrder] = useState<Order | null>(() => {
 
   const handleSelectDemo = (id: string) => {
     setSearchId(id);
-    const found = orders.find(o => String(o.id ?? '').toLowerCase() === id.toLowerCase());
-    if (found) {
-      setActiveOrder(found);
-    }
+    setIsSearching(true);
+    setTimeout(() => {
+      const found = orders.find(o => String(o.id ?? '').toLowerCase() === id.toLowerCase());
+      if (found) {
+        setActiveOrder(found);
+      }
+      setIsSearching(false);
+    }, 240);
   };
 
   const handleSelectHistoryOrder = (order: Order) => {
@@ -483,7 +491,50 @@ const [activeOrder, setActiveOrder] = useState<Order | null>(() => {
 
         {/* Order Details Card */}
         <AnimatePresence mode="wait">
-          {!activeOrder ? (
+          {isSearching ? (
+            <motion.div
+              key="searching-skeleton"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="bg-white text-[#1c1b1b] rounded-3xl p-6 sm:p-10 shadow-2xl border border-white/20 space-y-8 animate-shimmer"
+            >
+              <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 pb-6 border-b border-[#e5e2e1]">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-44 rounded-lg bg-neutral-200" />
+                    <div className="h-6 w-24 rounded-full bg-neutral-200" />
+                  </div>
+                  <div className="h-4 w-60 rounded bg-neutral-200" />
+                </div>
+                <div className="h-9 w-32 rounded-xl bg-neutral-200" />
+              </div>
+
+              {/* Stepper Timeline Skeleton */}
+              <div className="space-y-4">
+                <div className="h-4 w-36 rounded bg-neutral-200" />
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                  {[...Array(10)].map((_, i) => (
+                    <div key={i} className="p-3 rounded-xl border border-neutral-200 bg-neutral-50 space-y-2">
+                      <div className="w-6 h-6 rounded-full bg-neutral-200" />
+                      <div className="h-3 w-16 rounded bg-neutral-200" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Cards row skeleton */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-[#e5e2e1]">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200 space-y-3">
+                    <div className="h-4 w-28 rounded bg-neutral-200" />
+                    <div className="h-3 w-full rounded bg-neutral-200" />
+                    <div className="h-3 w-3/4 rounded bg-neutral-200" />
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          ) : !activeOrder ? (
             <motion.div
               key="not-found"
               initial={{ opacity: 0, y: 15 }}

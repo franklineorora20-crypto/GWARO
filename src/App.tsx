@@ -25,6 +25,7 @@ import { QuickHub } from './components/QuickHub';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { MobileBottomBar } from './components/MobileBottomBar';
 import { CommandMenu } from './components/CommandMenu';
+import { HomePageSkeleton } from './components/SkeletonLoaders';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
 import { getOrders, mapDbOrderToOrder } from './lib/orders';
 import { 
@@ -42,6 +43,8 @@ const pathToPage = (pathname: string): PageType => {
     '/services': 'services',
     '/calculator': 'calculator',
     '/track': 'track',
+    '/tracking': 'track',
+    '/search': 'track',
     '/memberships': 'memberships',
     '/branches': 'branches',
     '/locations': 'branches',
@@ -71,7 +74,8 @@ export default function App() {
   const [activePage, setActivePage] = useState<PageType>(pathToPage(window.location.pathname));
 
   // Saved Orders in LocalStorage
- const [orders, setOrders] = useState<Order[]>(SAMPLE_ORDERS);
+  const [orders, setOrders] = useState<Order[]>(SAMPLE_ORDERS);
+  const [isHydrating, setIsHydrating] = useState(true);
 
   const loadOrders = useCallback(async () => {
     let dbOrdersLoaded = false;
@@ -100,6 +104,10 @@ export default function App() {
         console.warn('Error reading local orders:', e);
       }
     }
+
+    setTimeout(() => {
+      setIsHydrating(false);
+    }, 240);
   }, []);
 
   useEffect(() => {
@@ -341,36 +349,42 @@ export default function App() {
               transition={{ duration: 0.25 }}
               className="space-y-12 pb-8 sm:pb-12 w-full max-w-full overflow-x-hidden"
             >
-              {/* Hero Banner */}
-              <Hero
-                onOpenBooking={() => handleOpenBooking()}
-                onNavigateToTrack={() => handleSelectPage('track')}
-                onNavigateToCalculator={() => handleSelectPage('calculator')}
-              />
+              {isHydrating ? (
+                <HomePageSkeleton />
+              ) : (
+                <>
+                  {/* Hero Banner */}
+                  <Hero
+                    onOpenBooking={() => handleOpenBooking()}
+                    onNavigateToTrack={() => handleSelectPage('track')}
+                    onNavigateToCalculator={() => handleSelectPage('calculator')}
+                  />
 
-              {/* Proof + Trust Section */}
-              <TrustBanner />
+                  {/* Proof + Trust Section */}
+                  <TrustBanner />
 
-              {/* Social Proof & Local Testimonials */}
-              <Testimonials onShowToast={(t, m) => showToast(t, m)} />
+                  {/* Social Proof & Local Testimonials */}
+                  <Testimonials onShowToast={(t, m) => showToast(t, m)} />
 
-              {/* Interactive Action-Driven Quick Hub Section */}
-              <QuickHub
-                ordersCount={orders.length}
-                onOpenBooking={() => handleOpenBooking()}
-                onNavigateToPage={(page) => handleSelectPage(page)}
-              />
+                  {/* Interactive Action-Driven Quick Hub Section */}
+                  <QuickHub
+                    ordersCount={orders.length}
+                    onOpenBooking={() => handleOpenBooking()}
+                    onNavigateToPage={(page) => handleSelectPage(page)}
+                  />
 
-              {/* Featured Services Preview */}
-              <ServicesSection
-                onSelectServiceForBooking={(name) => handleOpenBooking(name)}
-                onOpenBooking={() => handleOpenBooking()}
-              />
+                  {/* Featured Services Preview */}
+                  <ServicesSection
+                    onSelectServiceForBooking={(name) => handleOpenBooking(name)}
+                    onOpenBooking={() => handleOpenBooking()}
+                  />
 
-              {/* Branch Hub Preview */}
-              <BranchesSection
-                onOpenBooking={() => handleOpenBooking()}
-              />
+                  {/* Branch Hub Preview */}
+                  <BranchesSection
+                    onOpenBooking={() => handleOpenBooking()}
+                  />
+                </>
+              )}
             </motion.div>
           )}
 

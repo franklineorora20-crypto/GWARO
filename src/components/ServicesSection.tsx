@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ServiceCategory, ServiceItem } from '../types';
 import { INITIAL_SERVICES } from '../data/initialData';
 import { Shirt, Sparkles, CheckCircle2, ArrowRight, Bed, Layers, Building2, Plus, Clock } from 'lucide-react';
+import { ImageWithSkeleton, ServiceCardSkeleton } from './SkeletonLoaders';
 
 interface ServicesSectionProps {
   onSelectServiceForBooking: (serviceName: string) => void;
@@ -14,6 +15,16 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
   onOpenBooking
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory>('all');
+  const [isFiltering, setIsFiltering] = useState(false);
+
+  const handleCategoryChange = (catKey: ServiceCategory) => {
+    if (catKey === selectedCategory) return;
+    setSelectedCategory(catKey);
+    setIsFiltering(true);
+    setTimeout(() => {
+      setIsFiltering(false);
+    }, 180);
+  };
 
   const categories: { key: ServiceCategory; label: string }[] = [
     { key: 'all', label: 'All Services' },
@@ -51,7 +62,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
               return (
                 <button
                   key={cat.key}
-                  onClick={() => setSelectedCategory(cat.key)}
+                  onClick={() => handleCategoryChange(cat.key)}
                   className={`relative px-3.5 py-1.5 rounded-full text-xs font-semibold font-manrope transition-colors cursor-pointer whitespace-nowrap shrink-0 z-10 ${
                     isSelected
                       ? 'text-white dark:text-[#0c0418]'
@@ -78,13 +89,18 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           <AnimatePresence mode="popLayout">
-            {filteredServices.map((service) => {
-              const isLeadCard = service.popular && (service.id === 's-1' || service.id === 's-3');
+            {isFiltering ? (
+              [...Array(filteredServices.length || 3)].map((_, idx) => (
+                <ServiceCardSkeleton key={`skeleton-${idx}`} />
+              ))
+            ) : (
+              filteredServices.map((service) => {
+                const isLeadCard = service.popular && (service.id === 's-1' || service.id === 's-3');
 
-              return (
-                <motion.div
-                  layout
-                  key={service.id}
+                return (
+                  <motion.div
+                    layout
+                    key={service.id}
                   initial={{ opacity: 0, y: 12, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 12, scale: 0.98 }}
@@ -116,11 +132,11 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                     {/* Image Preview if present */}
                     {service.image && (
                       <div className="rounded-xl overflow-hidden mb-4 h-40 bg-neutral-100 dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.08]">
-                        <img 
+                        <ImageWithSkeleton 
                           src={service.image} 
                           alt={service.name} 
+                          aspectClassName="h-40 w-full"
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          referrerPolicy="no-referrer"
                         />
                       </div>
                     )}
@@ -174,7 +190,8 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                   </div>
                 </motion.div>
               );
-            })}
+            })
+            )}
           </AnimatePresence>
         </motion.div>
 

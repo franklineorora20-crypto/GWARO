@@ -5,6 +5,7 @@ import { getOrderByTrackingId, mapDbOrderToOrder } from "../lib/orders";
 import { SAMPLE_ORDERS } from "../data/initialData";
 import type { Order, OrderStatus } from "../types";
 import { CheckCircle2, MapPin, Clock, Truck, Package, CreditCard, Search, ArrowRight, Copy, Check, Sparkles } from "lucide-react";
+import { TrackOrderSkeleton } from "./SkeletonLoaders";
 
 interface TrackOrderProps {
   initialTrackingId?: string;
@@ -78,10 +79,14 @@ const TrackOrder: React.FC<TrackOrderProps> = ({ initialTrackingId = '', orders 
       return;
     }
 
+    // Graceful minimum buffer to allow skeleton loader to render smoothly without flickering
+    const minBuffer = new Promise((resolve) => setTimeout(resolve, 320));
+
     // 1) Try Supabase / Firebase
     try {
       const data = await getOrderByTrackingId(raw);
       if (data) {
+        await minBuffer;
         const mapped = mapDbOrderToOrder(data);
         setOrder(mapped);
         setSubscribedId(mapped.id || raw);
@@ -95,6 +100,7 @@ const TrackOrder: React.FC<TrackOrderProps> = ({ initialTrackingId = '', orders 
     // 2) Try orders passed in props
     const matchFromProps = orders.find((o) => isOrderMatch(o, raw));
     if (matchFromProps) {
+      await minBuffer;
       setOrder(matchFromProps);
       setSubscribedId(matchFromProps.id);
       setLoading(false);
@@ -109,6 +115,7 @@ const TrackOrder: React.FC<TrackOrderProps> = ({ initialTrackingId = '', orders 
         if (Array.isArray(parsed)) {
           const matchLocal = parsed.find((o) => isOrderMatch(o, raw));
           if (matchLocal) {
+            await minBuffer;
             setOrder(matchLocal);
             setSubscribedId(matchLocal.id);
             setLoading(false);
@@ -123,12 +130,14 @@ const TrackOrder: React.FC<TrackOrderProps> = ({ initialTrackingId = '', orders 
     // 4) Try SAMPLE_ORDERS
     const matchSample = SAMPLE_ORDERS.find((o) => isOrderMatch(o, raw));
     if (matchSample) {
+      await minBuffer;
       setOrder(matchSample);
       setSubscribedId(matchSample.id);
       setLoading(false);
       return;
     }
 
+    await minBuffer;
     setError("Order not found. Please verify your tracking number or phone number.");
     setLoading(false);
   };
@@ -229,10 +238,10 @@ const TrackOrder: React.FC<TrackOrderProps> = ({ initialTrackingId = '', orders 
               className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-[#5E228B] hover:bg-[#501a78] text-white font-bold text-xs sm:text-sm font-manrope shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_2px_8px_rgba(94,34,139,0.3)] flex items-center justify-center gap-2 cursor-pointer transition-colors shrink-0"
             >
               {loading ? (
-                <>
-                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Checking...</span>
-                </>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#FED65B] animate-ping" />
+                  <span>Searching...</span>
+                </div>
               ) : (
                 <>
                   <span>Track Order</span>
@@ -267,10 +276,13 @@ const TrackOrder: React.FC<TrackOrderProps> = ({ initialTrackingId = '', orders 
           </div>
         </div>
 
-        {/* Order Details & Stepper */}
-        <AnimatePresence>
-          {order && (
+        {/* Order Details & Stepper or Skeleton Loading State */}
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <TrackOrderSkeleton key="order-skeleton" />
+          ) : order ? (
             <motion.div
+              key={order.id}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 16 }}
@@ -415,7 +427,7 @@ const TrackOrder: React.FC<TrackOrderProps> = ({ initialTrackingId = '', orders 
                 </div>
               </div>
             </motion.div>
-          )}
+          ) : null}
         </AnimatePresence>
       </div>
     </section>

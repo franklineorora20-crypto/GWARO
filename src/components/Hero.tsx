@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, ShieldCheck, Truck, Sparkles, Clock, CheckCircle2, Calculator, Zap, ChevronRight } from 'lucide-react';
 import heroImage from '../assets/images/hero_laundry_pristine_1790275438376.jpg';
+import { ImageWithSkeleton } from './SkeletonLoaders';
 
 interface HeroProps {
   onOpenBooking: (preselectedItem?: string) => void;
@@ -160,18 +161,18 @@ export const Hero: React.FC<HeroProps> = ({
         {/* Right Column: Hero Visual Asset with Emil Kowalski Craft Framing */}
         <div className="lg:col-span-5 relative">
           <div className="relative rounded-3xl overflow-hidden border border-black/[0.08] dark:border-white/[0.1] shadow-[0_20px_48px_-12px_rgba(0,0,0,0.18)] bg-neutral-100 dark:bg-white/[0.04] aspect-[4/3] group">
-            <img 
+            <ImageWithSkeleton 
               src={heroImage} 
               alt="Pristine folded linen and executive garment care by Goldtribe" 
+              aspectClassName="aspect-[4/3]"
               className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-              referrerPolicy="no-referrer"
             />
 
             {/* Subtle Gradient Contrast Scrim */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-6" />
+            <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-6" />
 
             {/* Overlay Info Card */}
-            <div className="absolute bottom-3 left-3 right-3 sm:bottom-5 sm:left-5 sm:right-5 p-3 sm:p-4 rounded-2xl bg-white/90 dark:bg-[#120722]/90 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-lg flex items-center justify-between gap-2">
+            <div className="absolute bottom-3 left-3 right-3 sm:bottom-5 sm:left-5 sm:right-5 p-3 sm:p-4 rounded-2xl bg-white/90 dark:bg-[#120722]/90 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-lg flex items-center justify-between gap-2 z-10">
               <div className="min-w-0">
                 <div className="text-xs font-bold font-manrope text-neutral-900 dark:text-white truncate">
                   Executive Steam Finish
