@@ -134,7 +134,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     const orderId = `GL-${randomDigits}`;
     const fullAddressText = `${estatePreset}, ${address || 'Near landmark'}`;
 
-    const defaultRefCode = refCode || (payStatus === 'Paid via M-Pesa' || payStatus === 'Payment Submitted' ? `SDX${Math.floor(100000 + Math.random() * 900000)}` : undefined);
+    const defaultRefCode = refCode;
 
     const newOrder: Order = {
       id: orderId,
@@ -511,6 +511,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   Ksh {calculatedTotal.toLocaleString()}
                 </span>
               </div>
+              <div className="text-[11px] text-neutral-500 dark:text-neutral-400 font-medium text-right">
+                All prices inclusive of 16% VAT
+              </div>
             </div>
 
             <div className="flex gap-2.5 pt-1">
@@ -569,7 +572,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 customerName={customerName}
                 phone={phone}
                 onPaymentSubmitted={(record) => {
-                  completeOrderCreation('Payment Submitted', record.mpesa_code);
+                  if (record.mpesa_code === 'PAY_ON_DELIVERY') {
+                    completeOrderCreation('Pay on Delivery');
+                  } else if (record.status === 'Paid via M-Pesa' && record.mpesa_code) {
+                    completeOrderCreation('Paid via M-Pesa', record.mpesa_code);
+                  }
                 }}
               />
             ) : (

@@ -69,7 +69,7 @@ export const Footer: React.FC<FooterProps> = ({
             </li>
             <li>
               <button 
-                onClick={() => setModalType('terms')}
+                onClick={() => onNavigateToSection('terms')}
                 className="hover:text-white transition-colors cursor-pointer"
               >
                 Terms of Service
@@ -77,10 +77,18 @@ export const Footer: React.FC<FooterProps> = ({
             </li>
             <li>
               <button 
-                onClick={() => setModalType('policy')}
+                onClick={() => onNavigateToSection('privacy')}
                 className="hover:text-white transition-colors cursor-pointer"
               >
-                Garment & Order Policy
+                Privacy Policy (ODPC)
+              </button>
+            </li>
+            <li>
+              <button 
+                onClick={() => onNavigateToSection('refund')}
+                className="hover:text-white transition-colors cursor-pointer"
+              >
+                Refund & Claims Policy
               </button>
             </li>
             <li>
@@ -109,12 +117,13 @@ export const Footer: React.FC<FooterProps> = ({
       {/* Bottom Bar */}
       <div className="border-t border-white/[0.08] pt-8 max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-neutral-500">
         <p>
-          © 2026 Goldtribe Link Laundromat. Usafi: Kazi Yetu.
+          © 2026 Goldtribe Link Laundromat. All prices inclusive of 16% VAT. Usafi: Kazi Yetu.
         </p>
 
         <div className="flex gap-6 font-medium text-neutral-400">
-          <button onClick={() => setModalType('terms')} className="hover:text-white cursor-pointer">Privacy Policy</button>
-          <button onClick={() => setModalType('policy')} className="hover:text-white cursor-pointer">Garment Terms</button>
+          <button onClick={() => onNavigateToSection('privacy')} className="hover:text-white cursor-pointer">Privacy Policy</button>
+          <button onClick={() => onNavigateToSection('terms')} className="hover:text-white cursor-pointer">Terms of Service</button>
+          <button onClick={() => onNavigateToSection('refund')} className="hover:text-white cursor-pointer">Refund Policy</button>
         </div>
       </div>
 

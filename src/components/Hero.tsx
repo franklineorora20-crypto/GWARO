@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, ShieldCheck, Truck, Sparkles, Clock, CheckCircle2, Calculator, Zap, ChevronRight } from 'lucide-react';
-import heroImage from '../assets/images/hero_laundry_pristine_1790275438376.jpg';
+import heroImage from '../assets/images/hero_laundry_pristine_1790275438376.webp';
 import { ImageWithSkeleton } from './SkeletonLoaders';
 
 interface HeroProps {

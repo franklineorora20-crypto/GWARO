@@ -64,31 +64,61 @@ export const ManualMpesaPayment: React.FC<ManualMpesaPaymentProps> = ({
     const cleanCode = mpesaCode.trim().toUpperCase();
 
     if (cleanCode.length !== 10) {
-      setInputError('Please enter a valid 10-character M-PESA transaction code (e.g., SDX4J2K9L).');
+      setInputError('Please enter a valid 10-character M-PESA transaction code (e.g., SDX4J2K9L0).');
       return;
     }
 
     setIsSubmitting(true);
     setInputError('');
 
-    const timestamp = new Date().toISOString();
-    const record = {
-      order_id: orderId,
-      amount,
-      mpesa_code: cleanCode,
-      timestamp,
-      status: 'Payment Submitted',
-      customerName,
-      phone,
-    };
+    try {
+      const response = await fetch('/api/verify-manual', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mpesaCode: cleanCode,
+          amount,
+          phone,
+          orderId,
+          customerName,
+        }),
+      });
 
-    await saveManualPayment(record);
+      const verifyData = await response.json().catch(() => ({}));
 
-    setIsSubmitting(false);
-    setSubmittedDetails(record);
+      if (!response.ok || !verifyData.verified) {
+        setIsSubmitting(false);
+        setInputError(
+          verifyData.error ||
+            'Could not verify M-PESA code with Safaricom Daraja. Please check your SMS receipt or choose Pay on Delivery.'
+        );
+        return;
+      }
 
-    if (onPaymentSubmitted) {
-      onPaymentSubmitted(record);
+      const timestamp = new Date().toISOString();
+      const record = {
+        order_id: orderId,
+        amount,
+        mpesa_code: cleanCode,
+        timestamp,
+        status: 'Paid via M-Pesa',
+        customerName,
+        phone,
+      };
+
+      await saveManualPayment(record);
+
+      setIsSubmitting(false);
+      setSubmittedDetails(record);
+
+      if (onPaymentSubmitted) {
+        onPaymentSubmitted(record);
+      }
+    } catch (err) {
+      setIsSubmitting(false);
+      setInputError(
+        'Unable to reach Safaricom Daraja verification service. Please check your connection or choose Pay on Delivery.'
+      );
     }
   };
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MessageCircle, X, Send } from 'lucide-react';
 
@@ -12,11 +12,29 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
   defaultMessage = "Hi Goldtribe Link Laundromat! I'd like to book a laundry pickup or get a quote."
 }) => {
   const [openTooltip, setOpenTooltip] = useState(true);
+  const [isInteracting, setIsInteracting] = useState(false);
+
+  // Auto-collapse tooltip after 5 seconds of inactivity
+  useEffect(() => {
+    if (!openTooltip || isInteracting) return;
+
+    const timer = setTimeout(() => {
+      setOpenTooltip(false);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [openTooltip, isInteracting]);
 
   const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(defaultMessage)}`;
 
   return (
-    <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40 flex flex-col items-end gap-2 pointer-events-auto">
+    <div
+      onMouseEnter={() => setIsInteracting(true)}
+      onMouseLeave={() => setIsInteracting(false)}
+      onTouchStart={() => setIsInteracting(true)}
+      onTouchEnd={() => setIsInteracting(false)}
+      className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40 flex flex-col items-end gap-2 pointer-events-auto"
+    >
       {/* Quick Greeting Tooltip */}
       <AnimatePresence>
         {openTooltip && (

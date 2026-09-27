@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import type { Session } from "@supabase/supabase-js";
+import { signOutAdmin, type AdminSession } from "../lib/auth";
 import {
   LayoutDashboard,
   LogOut,
@@ -30,7 +30,6 @@ import {
   Sun,
   Moon,
 } from "lucide-react";
-import { signOutAdmin } from "../lib/auth";
 import {
   type AdminOrder,
   fetchAdminOrders,
@@ -141,7 +140,7 @@ function getPaymentBadgeStyle(paymentStatus: PaymentStatus) {
 }
 
 interface AdminDashboardProps {
-  session: Session;
+  session: AdminSession;
   onSignedOut: () => void;
 }
 

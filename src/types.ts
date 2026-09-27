@@ -6,7 +6,10 @@ export type PageType =
   | "memberships"
   | "branches"
   | "faq"
-  | "all";
+  | "all"
+  | "terms"
+  | "privacy"
+  | "refund";
 
 export type ServiceCategory =
   | "all"

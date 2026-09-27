@@ -26,6 +26,7 @@ import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { MobileBottomBar } from './components/MobileBottomBar';
 import { CommandMenu } from './components/CommandMenu';
 import { HomePageSkeleton } from './components/SkeletonLoaders';
+import { TermsPage, PrivacyPage, RefundPage } from './pages/legal';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
 import { getOrders, mapDbOrderToOrder } from './lib/orders';
 import { 
@@ -50,6 +51,9 @@ const pathToPage = (pathname: string): PageType => {
     '/locations': 'branches',
     '/faq': 'faq',
     '/all': 'all',
+    '/terms': 'terms',
+    '/privacy': 'privacy',
+    '/refund': 'refund',
   };
   return map[normalized.toLowerCase()] || 'home';
 };
@@ -64,6 +68,9 @@ const pageToPath = (page: PageType) => {
     branches: '/branches',
     faq: '/faq',
     all: '/all',
+    terms: '/terms',
+    privacy: '/privacy',
+    refund: '/refund',
   };
   return map[page];
 };
@@ -304,6 +311,9 @@ export default function App() {
       branches: 'branches',
       faq: 'faq',
       all: 'all',
+      terms: 'terms',
+      privacy: 'privacy',
+      refund: 'refund',
     };
     handleSelectPage(pageMap[sectionId] || 'home');
   };
@@ -575,6 +585,42 @@ export default function App() {
                 onShowToast={showToast}
               />
               <GarmentCareFAQ />
+            </motion.div>
+          )}
+
+          {activePage === 'terms' && (
+            <motion.div
+              key="page-terms"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25 }}
+            >
+              <TermsPage onNavigate={handleSelectPage} />
+            </motion.div>
+          )}
+
+          {activePage === 'privacy' && (
+            <motion.div
+              key="page-privacy"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25 }}
+            >
+              <PrivacyPage onNavigate={handleSelectPage} />
+            </motion.div>
+          )}
+
+          {activePage === 'refund' && (
+            <motion.div
+              key="page-refund"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25 }}
+            >
+              <RefundPage onNavigate={handleSelectPage} />
             </motion.div>
           )}
         </AnimatePresence>

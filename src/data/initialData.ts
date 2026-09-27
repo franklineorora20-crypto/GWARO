@@ -12,7 +12,7 @@ export const INITIAL_SERVICES: ServiceItem[] = [
     priceUnit: 'load',
     turnaround: '24 Hours',
     description: 'Everyday laundry wash using eco-friendly detergents and sanitizing wash cycle.',
-    image: '/src/assets/images/hero_laundry_pristine_1790275438376.jpg',
+    image: '/src/assets/images/hero_laundry_pristine_1790275438376.webp',
     popular: true,
     features: ['Standard load capacity', 'Eco-friendly detergent', 'Separated lights & darks', 'Deep stain removal']
   },
@@ -125,7 +125,7 @@ export const INITIAL_SERVICES: ServiceItem[] = [
     priceUnit: 'per suit',
     turnaround: '24-48 Hours',
     description: 'Chemical-free, fiber-safe solvent cleaning for 2-piece suits, blazers, and formal evening wear.',
-    image: '/src/assets/images/service_dry_cleaning_1790275450278.jpg',
+    image: '/src/assets/images/service_dry_cleaning_1790275450278.webp',
     popular: true,
     features: ['Hand-finished lapels', 'Breathable garment bag', 'Form retention care', 'Stain pre-treatment']
   },
@@ -359,7 +359,7 @@ export const INITIAL_SERVICES: ServiceItem[] = [
     priceUnit: 'per duvet',
     turnaround: '24 Hours',
     description: 'High-volume machine wash and thermo-sanitizing dry for single/double fiberfill and feather duvets.',
-    image: '/src/assets/images/service_duvet_clinic_1790275460988.jpg',
+    image: '/src/assets/images/service_duvet_clinic_1790275460988.webp',
     popular: true,
     features: ['Thermo-sanitization', 'Anti-dustmite rinse', 'Deep stain removal', 'Protective carry sleeve']
   },

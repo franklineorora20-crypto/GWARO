@@ -1,8 +1,9 @@
-import {StrictMode} from 'react';
-import {createRoot} from 'react-dom/client';
+import { StrictMode, lazy, Suspense } from 'react';
+import { createRoot } from 'react-dom/client';
 import App from './App';
-import AdminApp from './admin/AdminApp';
 import './index.css';
+
+const AdminApp = lazy(() => import('./admin/AdminApp'));
 
 const isAdminRoute =
   window.location.pathname === '/admin' ||
@@ -10,6 +11,12 @@ const isAdminRoute =
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {isAdminRoute ? <AdminApp /> : <App />}
+    {isAdminRoute ? (
+      <Suspense fallback={<div className="min-h-screen bg-[#130722]" />}>
+        <AdminApp />
+      </Suspense>
+    ) : (
+      <App />
+    )}
   </StrictMode>,
 );

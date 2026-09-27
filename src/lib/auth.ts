@@ -1,166 +1,122 @@
-import type { Session, User } from "@supabase/supabase-js";
-import { supabase, isSupabaseConfigured } from "./supabase";
+import {
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  type User as FirebaseUser,
+} from "firebase/auth";
+import { auth } from "./firebase";
+
+export interface AdminSession {
+  user: {
+    uid: string;
+    email: string | null;
+    emailVerified: boolean;
+  };
+}
 
 function parseAdminEmails(): string[] {
-  const raw = import.meta.env.VITE_ADMIN_EMAILS ?? "";
+  const raw = import.meta.env.VITE_ADMIN_EMAILS ?? "fgwaro@kabarak.ac.ke,admin@goldtribe.co.ke";
 
   return raw
     .split(",")
-    .map((e) => e.trim().toLowerCase())
+    .map((e: string) => e.trim().toLowerCase())
     .filter(Boolean);
 }
 
-export function isAdminUser(user: User | null | undefined): boolean {
+export function isAdminUser(user: FirebaseUser | { email?: string | null } | null | undefined): boolean {
   if (!user?.email) return false;
 
   const allowed = parseAdminEmails();
-
-  // No configured admin emails = allow all users or default admin in preview mode
-  if (allowed.length === 0) return true;
+  if (allowed.length === 0) return false;
 
   return allowed.includes(user.email.toLowerCase());
 }
 
-export async function signInAdmin(email: string, password: string) {
+function toAdminSession(user: FirebaseUser): AdminSession {
+  return {
+    user: {
+      uid: user.uid,
+      email: user.email,
+      emailVerified: user.emailVerified,
+    },
+  };
+}
+
+export async function signInAdmin(email: string, password: string): Promise<{ user: FirebaseUser; session: AdminSession }> {
   const cleanEmail = email.trim().toLowerCase();
 
-  if (!isSupabaseConfigured) {
-    const mockUser: User = {
-      id: "admin-local-id",
-      app_metadata: {},
-      user_metadata: {},
-      aud: "authenticated",
-      created_at: new Date().toISOString(),
-      email: cleanEmail || "admin@goldtribe.co.ke",
-    };
-
-    const mockSession: Session = {
-      access_token: "mock-admin-token",
-      refresh_token: "mock-admin-refresh",
-      expires_in: 3600,
-      token_type: "bearer",
-      user: mockUser,
-    };
-
-    try {
-      localStorage.setItem(
-        "goldtribe_admin_session",
-        JSON.stringify(mockSession)
-      );
-    } catch {}
-
-    return { user: mockUser, session: mockSession };
+  if (!auth) {
+    throw new Error("Firebase Authentication is not initialized. Check environment configuration.");
   }
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: cleanEmail,
-    password,
-  });
+  const credential = await signInWithEmailAndPassword(auth, cleanEmail, password);
+  const firebaseUser = credential.user;
 
-  if (error) {
-    throw new Error(error.message);
+  if (!firebaseUser) {
+    throw new Error("Unable to authenticate admin user.");
   }
 
-  if (!data.user || !data.session) {
-    throw new Error("Unable to create admin session.");
-  }
-
-  if (!isAdminUser(data.user)) {
-    await supabase.auth.signOut();
+  if (!isAdminUser(firebaseUser)) {
+    await signOut(auth);
     throw new Error("This account is not authorized for admin access.");
   }
 
-  try {
-    localStorage.setItem(
-      "goldtribe_admin_session",
-      JSON.stringify(data.session)
-    );
-  } catch {}
-
-  return data;
+  const session = toAdminSession(firebaseUser);
+  return { user: firebaseUser, session };
 }
 
-export async function signOutAdmin() {
+export async function signOutAdmin(): Promise<void> {
   try {
     localStorage.removeItem("goldtribe_admin_session");
   } catch {}
 
-  if (isSupabaseConfigured) {
-    try {
-      await supabase.auth.signOut();
-    } catch (e) {
-      console.warn("signOutAdmin notice:", e);
-    }
+  if (auth) {
+    await signOut(auth);
   }
 }
 
-export async function getAdminSession(): Promise<Session | null> {
-  // First check the saved Supabase session
-  try {
-    const saved = localStorage.getItem("goldtribe_admin_session");
+export async function getAdminSession(): Promise<AdminSession | null> {
+  if (!auth) {
+    return null;
+  }
 
-    if (saved) {
-      const session = JSON.parse(saved) as Session;
+  const currentUser = auth.currentUser;
+  if (currentUser && isAdminUser(currentUser)) {
+    return toAdminSession(currentUser);
+  }
 
-      if (session?.user) {
-        if (!isAdminUser(session.user)) {
-          localStorage.removeItem("goldtribe_admin_session");
-          return null;
-        }
-
-        return session;
+  return new Promise((resolve) => {
+    if (!auth) {
+      resolve(null);
+      return;
+    }
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      unsubscribe();
+      if (user && isAdminUser(user)) {
+        resolve(toAdminSession(user));
+      } else {
+        resolve(null);
       }
-    }
-  } catch {}
-
-  if (!isSupabaseConfigured) {
-    return null;
-  }
-
-  try {
-    const { data, error } = await supabase.auth.getSession();
-
-    if (error || !data) return null;
-
-    const session = data.session;
-
-    if (!session) return null;
-
-    if (!isAdminUser(session.user)) {
-      await supabase.auth.signOut().catch(() => {});
-      return null;
-    }
-
-    return session;
-  } catch (err) {
-    console.warn("getAdminSession notice:", err);
-    return null;
-  }
+    });
+  });
 }
 
 export function onAdminAuthChange(
-  callback: (session: Session | null) => void
-) {
-  if (!isSupabaseConfigured) {
+  callback: (session: AdminSession | null) => void
+): { unsubscribe: () => void } {
+  if (!auth) {
     return { unsubscribe: () => {} };
   }
 
-  try {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session && !isAdminUser(session.user)) {
-        supabase.auth.signOut().catch(() => {});
-        callback(null);
-        return;
-      }
+  const unsubscribe = onAuthStateChanged(auth, (user) => {
+    if (user && !isAdminUser(user)) {
+      signOut(auth!).catch(() => {});
+      callback(null);
+      return;
+    }
 
-      callback(session);
-    });
+    callback(user ? toAdminSession(user) : null);
+  });
 
-    return subscription;
-  } catch (err) {
-    console.warn("onAdminAuthChange notice:", err);
-    return { unsubscribe: () => {} };
-  }
+  return { unsubscribe };
 }

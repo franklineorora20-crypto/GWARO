@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
-import type { Session } from "@supabase/supabase-js";
-import { getAdminSession, onAdminAuthChange } from "../lib/auth";
+import { getAdminSession, onAdminAuthChange, type AdminSession } from "../lib/auth";
 import { AdminLogin } from "./AdminLogin";
 import { AdminDashboard } from "./AdminDashboard";
 
 export default function AdminApp() {
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<AdminSession | null>(null);
   const [booting, setBooting] = useState(true);
 
   useEffect(() => {
